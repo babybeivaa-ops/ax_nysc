@@ -1,0 +1,3523 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYSC AI 운영 아카이브</title>
+<style>
+/* ── 리셋 & 기본 ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d2d5e;--navy2:#1a3f7a;--blue:#2563eb;--blue-lt:#dbeafe;
+  --teal:#0891b2;--teal-lt:#e0f2fe;--green:#16a34a;--green-lt:#dcfce7;
+  --orange:#ea580c;--orange-lt:#ffedd5;--purple:#7c3aed;--purple-lt:#ede9fe;
+  --red:#dc2626;--red-lt:#fee2e2;
+  --gray50:#f8fafc;--gray100:#f1f5f9;--gray200:#e2e8f0;--gray300:#cbd5e1;
+  --gray400:#94a3b8;--gray500:#64748b;--gray600:#475569;--gray700:#334155;
+  --gray800:#1e293b;--white:#ffffff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  background:var(--gray100);color:var(--gray800);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── 헤더 ── */
+.site-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  color:var(--white);padding:0 24px;display:flex;align-items:center;
+  justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.site-header .logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.site-header h1{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.site-header .sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:1px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.header-meta{font-size:11px;color:rgba(255,255,255,.55)}
+.btn-header{padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;
+  cursor:pointer;border:none;transition:background .15s}
+.btn-excel{background:rgba(255,255,255,.15);color:var(--white)}
+.btn-excel:hover{background:rgba(255,255,255,.25)}
+.btn-new{background:var(--blue);color:var(--white)}
+.btn-new:hover{background:#1d4ed8}
+
+/* ── 탭바 ── */
+.tab-bar{background:var(--white);border-bottom:2px solid var(--gray200);padding:0 24px;
+  display:flex;gap:0;position:sticky;top:60px;z-index:90;box-shadow:var(--shadow-sm)}
+.tab-btn{padding:14px 22px;border:none;background:none;font-size:14px;font-weight:600;
+  color:var(--gray500);cursor:pointer;position:relative;transition:color .15s;white-space:nowrap}
+.tab-btn::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:3px;
+  background:transparent;transition:background .15s;border-radius:3px 3px 0 0}
+.tab-btn:hover{color:var(--gray800)}
+.tab-btn.active{color:var(--navy)}
+.tab-btn.active::after{background:var(--navy)}
+.tab-btn.ai-tab{color:var(--purple)}
+.tab-btn.ai-tab.active{color:var(--purple)}
+.tab-btn.ai-tab.active::after{background:var(--purple)}
+
+/* ── 레이아웃 ── */
+.app-body{display:flex;min-height:calc(100vh - 122px)}
+.sidebar{width:220px;min-width:220px;background:var(--white);
+  border-right:1px solid var(--gray200);padding:20px 0;
+  position:sticky;top:122px;height:calc(100vh - 122px);overflow-y:auto}
+.sidebar-label{padding:0 16px 8px;font-size:10px;font-weight:700;
+  color:var(--gray400);letter-spacing:.08em;text-transform:uppercase}
+.subtype-btn{display:block;width:100%;padding:9px 16px;border:none;background:none;
+  text-align:left;font-size:13px;color:var(--gray600);cursor:pointer;
+  transition:background .12s,color .12s;border-left:3px solid transparent}
+.subtype-btn:hover{background:var(--gray50);color:var(--gray800)}
+.subtype-btn.active{background:var(--blue-lt);color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.subtype-count{float:right;background:var(--gray200);color:var(--gray500);
+  border-radius:20px;padding:1px 7px;font-size:11px}
+.subtype-btn.active .subtype-count{background:#bfdbfe;color:var(--blue)}
+.main-content{flex:1;padding:20px 24px;min-width:0}
+
+/* ── 툴바 ── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:340px}
+.search-wrap .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--gray400);font-size:13px;pointer-events:none}
+.search-input{width:100%;padding:8px 10px 8px 32px;border:1px solid var(--gray300);
+  border-radius:var(--radius);font-size:13px;background:var(--white);outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--blue)}
+.filter-select{padding:8px 10px;border:1px solid var(--gray300);border-radius:var(--radius);
+  font-size:13px;background:var(--white);color:var(--gray700);cursor:pointer;outline:none}
+.result-info{margin-left:auto;font-size:12px;color:var(--gray500);white-space:nowrap}
+
+/* ── 연간 목표 대비 실적 달성 현황 ── */
+.target-dashboard{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:20px;color:var(--white)}
+.target-dashboard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.target-dashboard-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.demo-badge{background:var(--orange);color:var(--white);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:10px;letter-spacing:.03em}
+.target-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:800px){.target-kpi-grid{grid-template-columns:1fr}}
+.target-kpi-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--radius);padding:14px 18px}
+.target-kpi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.target-kpi-name{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.target-kpi-src{font-size:10px;color:rgba(255,255,255,.55)}
+.target-kpi-nums{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.target-kpi-actual{font-size:22px;font-weight:800}
+.target-kpi-actual .unit{font-size:12px;font-weight:500;color:rgba(255,255,255,.65);margin-left:2px}
+.target-kpi-goal{font-size:12px;color:rgba(255,255,255,.7)}
+.target-progress-track{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.target-progress-fill{height:100%;border-radius:4px;background:var(--green);transition:width .3s}
+.target-progress-fill.over{background:var(--orange)}
+.target-kpi-foot{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.8)}
+.target-kpi-rate{font-weight:700}
+.target-kpi-rate.over{color:#fdba74}
+.btn-target-edit{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  color:var(--white);padding:5px 12px;border-radius:var(--radius);font-size:11px;font-weight:600;
+  cursor:pointer;transition:background .15s}
+.btn-target-edit:hover{background:rgba(255,255,255,.25)}
+
+/* ── 통계 카드 ── */
+.stats-row{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.stat-card{background:var(--white);border:1px solid var(--gray200);border-radius:var(--radius);
+  padding:12px 16px;flex:1;min-width:120px;box-shadow:var(--shadow-sm)}
+.stat-card .stat-label{font-size:11px;color:var(--gray500)}
+.stat-card .stat-val{font-size:22px;font-weight:700;color:var(--navy);line-height:1.3}
+.stat-card .stat-sub{font-size:11px;color:var(--gray400)}
+
+/* ── 목록 테이블 ── */
+.list-table-wrap{background:var(--white);border:1px solid var(--gray200);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+.list-table{width:100%;border-collapse:collapse;font-size:13px}
+.list-table th{background:var(--gray50);padding:10px 14px;text-align:left;
+  font-size:11px;font-weight:700;color:var(--gray500);letter-spacing:.04em;
+  border-bottom:1px solid var(--gray200);white-space:nowrap}
+.list-table td{padding:11px 14px;border-bottom:1px solid var(--gray100);vertical-align:middle}
+.list-table tr:last-child td{border-bottom:none}
+.list-table tbody tr{cursor:pointer;transition:background .1s}
+.list-table tbody tr:hover{background:#f0f7ff}
+.list-table tbody tr.selected{background:var(--blue-lt)}
+.org-name{font-weight:600;color:var(--gray800)}
+.prog-summary{color:var(--gray500);font-size:12px;max-width:260px}
+.num{text-align:right}
+.action-btn{padding:4px 10px;border-radius:var(--radius);font-size:11px;font-weight:600;
+  cursor:pointer;border:1px solid;transition:all .12s}
+.btn-edit{background:var(--white);color:var(--blue);border-color:var(--blue)}
+.btn-edit:hover{background:var(--blue-lt)}
+
+/* ── 배지 ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-blue{background:var(--blue-lt);color:var(--blue)}
+.badge-green{background:var(--green-lt);color:var(--green)}
+.badge-orange{background:var(--orange-lt);color:var(--orange)}
+.badge-purple{background:var(--purple-lt);color:var(--purple)}
+.badge-teal{background:var(--teal-lt);color:var(--teal)}
+.badge-gray{background:var(--gray100);color:var(--gray600)}
+.badge-red{background:var(--red-lt);color:var(--red)}
+.badge-navy{background:var(--navy);color:var(--white)}
+
+/* ── 빈 상태 ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray400)}
+.empty-state .icon{font-size:36px;margin-bottom:10px}
+.empty-state p{font-size:13px}
+.no-data{padding:40px;text-align:center;color:var(--gray400);font-size:13px}
+
+/* ── 상세 패널 ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.detail-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:min(700px,100vw);
+  background:var(--white);box-shadow:-8px 0 40px rgba(0,0,0,.15);z-index:201;
+  display:flex;flex-direction:column;transform:translateX(100%);
+  transition:transform .25s cubic-bezier(.25,.46,.45,.94);overflow:hidden}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  color:var(--white);padding:18px 24px 14px;flex-shrink:0}
+.detail-header-top{display:flex;justify-content:space-between;align-items:flex-start}
+.detail-id{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:4px}
+.detail-title{font-size:17px;font-weight:700}
+.detail-subtitle{font-size:12px;color:rgba(255,255,255,.7);margin-top:3px}
+.detail-header-btns{display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+.detail-close{background:rgba(255,255,255,.15);border:none;color:var(--white);
+  width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .15s}
+.detail-close:hover{background:rgba(255,255,255,.25)}
+.btn-detail-edit{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  color:var(--white);padding:5px 12px;border-radius:var(--radius);font-size:12px;
+  font-weight:600;cursor:pointer;transition:background .15s}
+.btn-detail-edit:hover{background:rgba(255,255,255,.25)}
+.detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.detail-badges .badge{font-size:11px}
+.detail-tabs{display:flex;gap:0;background:var(--gray50);
+  border-bottom:1px solid var(--gray200);flex-shrink:0;overflow-x:auto}
+.detail-tab-btn{padding:10px 16px;border:none;background:none;font-size:12px;font-weight:600;
+  color:var(--gray500);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color .12s}
+.detail-tab-btn:hover{color:var(--gray800)}
+.detail-tab-btn.active{color:var(--navy);border-bottom-color:var(--navy);background:var(--white)}
+.detail-body{flex:1;overflow-y:auto;padding:20px 24px}
+.detail-tab-pane{display:none}
+.detail-tab-pane.active{display:block}
+
+/* ── 섹션 ── */
+.section{margin-bottom:22px}
+.section-title{font-size:11px;font-weight:700;color:var(--gray400);letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--gray200)}
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.info-item{display:flex;flex-direction:column;gap:2px}
+.info-label{font-size:11px;color:var(--gray400)}
+.info-val{font-size:13px;font-weight:600;color:var(--gray800)}
+
+/* ── 인원 테이블 ── */
+.pop-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.pop-table th,.pop-table td{padding:7px 10px;border:1px solid var(--gray200);text-align:center}
+.pop-table th{background:var(--gray50);font-size:11px;font-weight:700;color:var(--gray600)}
+.pop-table .row-label{text-align:left;font-weight:600;background:var(--gray50);color:var(--gray700)}
+.pop-table .total-row td{font-weight:700;background:var(--blue-lt);color:var(--navy)}
+.pop-table .sub-total{font-weight:700;background:var(--gray100)}
+.level-block{margin-bottom:14px}
+.level-title{font-size:11px;font-weight:700;color:var(--gray600);margin-bottom:6px;
+  padding:4px 8px;background:var(--gray50);border-radius:4px;display:inline-block}
+
+/* ── 프로그램 목록 ── */
+.prog-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.prog-item{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--radius)}
+.prog-num{width:22px;height:22px;background:var(--navy);color:var(--white);border-radius:50%;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prog-info{flex:1}
+.prog-name{font-weight:600;font-size:13px}
+.prog-meta{font-size:11px;color:var(--gray500);margin-top:1px}
+.prog-time{font-size:11px;color:var(--gray500);white-space:nowrap}
+
+/* ── 만족도 ── */
+.score-row{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.score-card{flex:1;min-width:140px;border:1px solid var(--gray200);border-radius:var(--radius);
+  padding:14px 16px;text-align:center;background:var(--white)}
+.score-val{font-size:28px;font-weight:800;line-height:1.1}
+.score-val.high{color:var(--green)}
+.score-val.mid{color:var(--teal)}
+.score-val.low{color:var(--orange)}
+.score-label{font-size:12px;color:var(--gray500);margin-top:4px}
+.score-sub{font-size:11px;color:var(--gray400);margin-top:2px}
+.progress-bar-wrap{margin-bottom:6px}
+.progress-label{font-size:11px;color:var(--gray600);margin-bottom:3px;display:flex;justify-content:space-between}
+.progress-bar{height:8px;background:var(--gray200);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s}
+.quote-box{background:var(--gray50);border-left:3px solid var(--blue);
+  border-radius:0 var(--radius) var(--radius) 0;padding:10px 14px;margin-bottom:10px}
+.quote-box.improve{border-left-color:var(--orange)}
+.quote-text{font-size:13px;color:var(--gray700);line-height:1.55}
+.quote-tag{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.tag-pos{background:var(--green-lt);color:var(--green)}
+.tag-imp{background:var(--orange-lt);color:var(--orange)}
+
+/* ── VOC ── */
+.voc-card{border:1px solid var(--gray200);border-radius:var(--radius);padding:14px 16px;background:var(--white)}
+.voc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.voc-type{font-size:13px;font-weight:700;color:var(--gray800)}
+.voc-row{margin-bottom:6px;font-size:12px}
+.voc-row .lbl{color:var(--gray500)}
+.voc-row .val{color:var(--gray800)}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.status-done{background:var(--green-lt);color:var(--green)}
+.status-next{background:var(--orange-lt);color:var(--orange)}
+.status-check{background:var(--teal-lt);color:var(--teal)}
+
+/* ── 총평 ── */
+.review-block{border:1px solid var(--gray200);border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
+.review-row{display:flex;border-bottom:1px solid var(--gray100)}
+.review-row:last-child{border-bottom:none}
+.review-key{width:110px;min-width:110px;background:var(--gray50);padding:10px 12px;
+  font-size:11px;font-weight:700;color:var(--gray600);display:flex;align-items:flex-start;
+  border-right:1px solid var(--gray200)}
+.review-val{flex:1;padding:10px 12px;font-size:13px;color:var(--gray700);line-height:1.55}
+
+/* ── AI 분석 화면 ── */
+.ai-page{display:none;padding:24px}
+.ai-page.active{display:block}
+.ai-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a6e 50%,var(--purple) 100%);
+  border-radius:var(--radius-lg);padding:28px 32px;color:var(--white);margin-bottom:24px}
+.ai-hero h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.ai-hero p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6}
+.ai-query-wrap{display:flex;gap:10px;margin-top:16px}
+.ai-query-input{flex:1;padding:12px 16px;border-radius:var(--radius);border:2px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.1);color:var(--white);font-size:14px;outline:none;
+  transition:border-color .15s}
+.ai-query-input::placeholder{color:rgba(255,255,255,.5)}
+.ai-query-input:focus{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.15)}
+.btn-ai-ask{padding:12px 20px;background:var(--white);color:var(--navy);border:none;
+  border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:background .15s}
+.btn-ai-ask:hover{background:var(--blue-lt)}
+.ai-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ai-chip{padding:6px 12px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.2);border-radius:20px;font-size:11px;cursor:pointer;
+  transition:all .15s}
+.ai-chip:hover{background:rgba(255,255,255,.22)}
+.ai-answer-box{background:var(--white);border:1px solid var(--gray200);border-radius:var(--radius-lg);
+  padding:20px 24px;margin-bottom:24px;box-shadow:var(--shadow-sm);display:none}
+.ai-answer-box.visible{display:block}
+.ai-answer-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.ai-answer-icon{width:32px;height:32px;background:var(--purple-lt);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.ai-answer-title{font-size:13px;font-weight:700;color:var(--gray800)}
+.ai-answer-q{font-size:12px;color:var(--gray500);margin-top:2px}
+.ai-answer-text{font-size:13px;color:var(--gray700);line-height:1.75;
+  border-left:3px solid var(--purple);padding-left:14px}
+.ai-answer-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px}
+.ai-card{background:var(--white);border:1px solid var(--gray200);border-radius:var(--radius-lg);
+  padding:20px;box-shadow:var(--shadow-sm)}
+.ai-card-title{font-size:13px;font-weight:700;color:var(--gray800);margin-bottom:14px;
+  display:flex;align-items:center;gap:6px}
+.ai-card-title .icon{font-size:16px}
+.chart-bar-group{display:flex;flex-direction:column;gap:8px}
+.chart-bar-item{display:flex;align-items:center;gap:8px}
+.chart-bar-label{width:90px;font-size:11px;color:var(--gray600);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chart-bar-track{flex:1;height:20px;background:var(--gray100);border-radius:4px;overflow:hidden;position:relative}
+.chart-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;
+  font-size:11px;font-weight:700;color:var(--white);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.chart-bar-val{font-size:11px;color:var(--gray600);min-width:36px;text-align:right;flex-shrink:0}
+.voc-keyword-list{display:flex;flex-direction:column;gap:8px}
+.voc-kw-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:var(--gray50);border-radius:var(--radius);border:1px solid var(--gray200)}
+.voc-kw-count{background:var(--red-lt);color:var(--red);border-radius:20px;
+  padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+.voc-kw-text{font-size:12px;color:var(--gray700);flex:1}
+.insight-list{display:flex;flex-direction:column;gap:8px}
+.insight-item{padding:10px 12px;background:var(--gray50);border-radius:var(--radius);
+  border-left:3px solid var(--blue);font-size:12px;color:var(--gray700);line-height:1.55}
+.insight-item.warn{border-left-color:var(--orange)}
+.insight-item.good{border-left-color:var(--green)}
+.prog-rank-list{display:flex;flex-direction:column;gap:6px}
+.prog-rank-item{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:var(--gray50);border-radius:var(--radius);border:1px solid var(--gray200)}
+.prog-rank-num{width:20px;height:20px;border-radius:50%;background:var(--navy);
+  color:var(--white);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.prog-rank-name{flex:1;font-size:12px;font-weight:600;color:var(--gray800)}
+.prog-rank-score{font-size:13px;font-weight:700;color:var(--green)}
+.compare-table{width:100%;border-collapse:collapse;font-size:12px}
+.compare-table th,.compare-table td{padding:7px 10px;border:1px solid var(--gray200);text-align:center}
+.compare-table th{background:var(--gray50);font-weight:700;color:var(--gray600)}
+.compare-table .best{color:var(--green);font-weight:700}
+
+/* ── AI 필터바 ── */
+.ai-filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  background:var(--white);border:1px solid var(--gray200);border-radius:var(--radius-lg);
+  padding:14px 18px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.ai-filter-label{font-size:11px;font-weight:700;color:var(--gray500);white-space:nowrap;margin-right:4px}
+.ai-filter-select{padding:6px 10px;border:1px solid var(--gray300);border-radius:var(--radius);
+  font-size:12px;color:var(--gray700);background:var(--white);cursor:pointer;outline:none}
+.ai-filter-select:focus{border-color:var(--blue)}
+.ai-filter-divider{width:1px;height:20px;background:var(--gray200);margin:0 4px}
+.ai-filter-scope{font-size:11px;color:var(--gray400);margin-left:auto;white-space:nowrap}
+.ai-filter-org{padding:6px 10px;border:1px solid var(--gray300);border-radius:var(--radius);
+  font-size:12px;color:var(--gray700);background:var(--white);outline:none;width:140px}
+.ai-filter-org:focus{border-color:var(--blue)}
+
+/* ── 무엇을 분석할까요? ── */
+.ai-item-picker{margin-top:16px}
+.ai-item-picker-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:8px}
+.ai-item-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ai-item-btn{padding:9px 16px;background:rgba(255,255,255,.12);color:var(--white);
+  border:1px solid rgba(255,255,255,.3);border-radius:20px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.ai-item-btn:hover{background:rgba(255,255,255,.25)}
+.ai-item-btn.active{background:var(--white);color:var(--navy);border-color:var(--white)}
+.ai-parse-hint{background:var(--blue-lt);border:1px solid #bfdbfe;border-radius:var(--radius);
+  padding:10px 14px;font-size:12px;color:var(--navy);margin-bottom:16px;display:flex;
+  align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ai-parse-hint b{font-weight:700}
+.ai-multi-choice{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.ai-multi-choice button{padding:5px 12px;background:var(--white);border:1px solid var(--blue);
+  color:var(--blue);border-radius:16px;font-size:12px;cursor:pointer;font-weight:600}
+.ai-multi-choice button:hover{background:var(--blue);color:var(--white)}
+
+/* ── AI 구조화 결과 카드 ── */
+.ai-result-card{background:var(--white);border:1px solid var(--purple);border-radius:var(--radius-lg);
+  box-shadow:0 0 0 3px rgba(124,58,237,.06);margin-bottom:24px;overflow:hidden;display:none}
+.ai-result-card.visible{display:block}
+.ai-result-header{background:linear-gradient(90deg,#4c1d95 0%,var(--purple) 100%);
+  color:var(--white);padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
+.ai-result-q{font-size:13px;font-weight:700}
+.ai-result-meta{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+.ai-result-badge{background:rgba(255,255,255,.2);color:var(--white);padding:3px 10px;
+  border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.ai-result-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:700px){.ai-result-body{grid-template-columns:1fr}}
+.ai-result-section{padding:18px 22px;border-right:1px solid var(--gray100);border-bottom:1px solid var(--gray100)}
+.ai-result-section:nth-child(even){border-right:none}
+.ai-result-section:nth-last-child(-n+2){border-bottom:none}
+@media(max-width:700px){.ai-result-section{border-right:none;border-bottom:1px solid var(--gray100)}}
+.ai-result-section-title{font-size:10px;font-weight:700;color:var(--gray400);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:5px}
+.ai-result-section-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-purple{background:var(--purple)}
+.dot-blue{background:var(--blue)}
+.dot-orange{background:var(--orange)}
+.dot-green{background:var(--green)}
+.ai-core-text{font-size:13px;color:var(--gray800);line-height:1.75;font-weight:500}
+.ai-evidence-list{display:flex;flex-direction:column;gap:6px}
+.ai-evidence-item{display:flex;align-items:center;gap:8px;padding:7px 10px;
+  background:var(--gray50);border-radius:var(--radius);border:1px solid var(--gray200)}
+.ai-evidence-count{background:var(--navy);color:var(--white);border-radius:20px;
+  padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.ai-evidence-text{font-size:12px;color:var(--gray700);flex:1}
+.btn-evidence{padding:3px 8px;background:var(--blue-lt);color:var(--blue);border:1px solid #bfdbfe;
+  border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-evidence:hover{background:var(--blue);color:var(--white)}
+.ai-pattern-list{display:flex;flex-direction:column;gap:6px}
+.ai-pattern-item{padding:9px 12px;border-radius:var(--radius);font-size:12px;color:var(--gray700);
+  line-height:1.6;border-left:3px solid var(--orange);background:var(--orange-lt)}
+.ai-suggest-list{display:flex;flex-direction:column;gap:6px}
+.ai-suggest-item{padding:9px 12px;border-radius:var(--radius);font-size:12px;color:var(--gray700);
+  line-height:1.6;border-left:3px solid var(--green);background:var(--green-lt)}
+.ai-ops-ref-panel{background:var(--blue-lt);border-top:1px solid #bfdbfe;padding:14px 22px}
+.ai-ops-ref-title{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.ai-ops-ref-list{display:flex;flex-wrap:wrap;gap:8px}
+.ai-ops-ref-item{padding:5px 12px;background:var(--white);border:1px solid #bfdbfe;
+  border-radius:20px;font-size:11px;cursor:pointer;color:var(--navy);font-weight:600;transition:all .12s}
+.ai-ops-ref-item:hover{background:var(--blue);color:var(--white);border-color:var(--blue)}
+
+/* ── 결과보고서 모달 ── */
+.report-modal{max-width:820px}
+.report-preview{background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--radius);
+  padding:28px 32px;font-size:13px;line-height:1.85;color:var(--gray800);
+  font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+.report-preview h3{font-size:15px;font-weight:700;color:var(--navy);margin:20px 0 8px;
+  padding-bottom:6px;border-bottom:2px solid var(--navy)}
+.report-preview h3:first-child{margin-top:0}
+.report-preview p{margin-bottom:10px;text-indent:1em}
+.report-preview .report-meta{font-size:11px;color:var(--gray500);margin-bottom:20px;
+  padding:10px 14px;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray200)}
+.report-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-copy{padding:9px 16px;background:var(--gray100);color:var(--gray700);border:1px solid var(--gray300);
+  border-radius:var(--radius);font-size:13px;cursor:pointer;transition:all .15s}
+.btn-copy:hover{background:var(--gray200)}
+.btn-copy.copied{background:var(--green-lt);color:var(--green);border-color:var(--green)}
+
+/* ── 재방문 프로그램 추천 모달 ── */
+.revisit-modal{max-width:720px}
+.revisit-org-list{display:flex;flex-direction:column;gap:8px}
+.revisit-org-item{padding:12px 14px;border:1px solid var(--gray200);border-radius:var(--radius);
+  cursor:pointer;transition:all .15s}
+.revisit-org-item:hover{border-color:var(--blue);background:var(--blue-lt)}
+.revisit-org-name{font-size:13px;font-weight:700;color:var(--gray800)}
+.revisit-org-meta{font-size:11px;color:var(--gray500);margin-top:3px}
+.revisit-summary-bar{background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--radius);
+  padding:10px 14px;font-size:12px;color:var(--gray700);margin-bottom:16px}
+.revisit-tag-list{display:flex;flex-wrap:wrap;gap:6px}
+.revisit-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:16px;
+  font-size:12px;font-weight:600}
+.revisit-tag-past{background:var(--gray100);color:var(--gray700)}
+.revisit-tag-dup{background:var(--red-lt);color:var(--red);text-decoration:line-through}
+.revisit-tag-new{background:var(--green-lt);color:var(--green);flex-direction:column;align-items:flex-start;gap:1px}
+.revisit-tag-new.revisit-tag-must{background:var(--orange-lt);color:var(--orange)}
+.revisit-tag-count{font-size:10px;font-weight:500;opacity:.8}
+.revisit-basis-list{padding-left:18px;font-size:12px;color:var(--gray700);line-height:1.7}
+.revisit-basis-list li{margin-bottom:4px}
+.empty-state-icon{font-size:36px;margin-bottom:10px}
+.empty-state-text{font-size:13px;color:var(--gray400);line-height:1.6}
+
+/* ── 모달 (등록/수정) ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:300;
+  display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:720px;
+  box-shadow:var(--shadow-lg);display:flex;flex-direction:column;max-height:90vh}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray200);flex-shrink:0}
+.modal-header-top{display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:16px;font-weight:700;color:var(--gray800)}
+.modal-close{width:28px;height:28px;border:none;background:var(--gray100);border-radius:50%;
+  cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--gray200)}
+.modal-steps{display:flex;gap:0;margin-top:14px;overflow-x:auto}
+.step-btn{padding:7px 14px;font-size:12px;font-weight:600;border:none;background:none;
+  cursor:pointer;color:var(--gray400);border-bottom:2px solid transparent;white-space:nowrap;transition:all .12s}
+.step-btn.active{color:var(--navy);border-bottom-color:var(--navy)}
+.step-btn.done{color:var(--green)}
+.modal-body{flex:1;overflow-y:auto;padding:20px 24px}
+.modal-footer{padding:14px 24px;border-top:1px solid var(--gray200);
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.step-pane{display:none}
+.step-pane.active{display:block}
+.form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:700;color:var(--gray600)}
+.form-label .req{color:var(--red);margin-left:2px}
+.form-control{padding:8px 10px;border:1px solid var(--gray300);border-radius:var(--radius);
+  font-size:13px;color:var(--gray800);outline:none;background:var(--white);transition:border-color .15s;width:100%}
+.form-control:focus{border-color:var(--blue)}
+select.form-control{cursor:pointer}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-hint{font-size:10px;color:var(--gray400);margin-top:2px}
+.people-grid{display:grid;grid-template-columns:auto repeat(3,1fr) auto;gap:1px;
+  background:var(--gray200);border:1px solid var(--gray200);border-radius:var(--radius);overflow:hidden;font-size:12px}
+.pg-header{background:var(--gray50);padding:7px 10px;font-size:11px;font-weight:700;
+  color:var(--gray600);text-align:center}
+.pg-label{background:var(--gray50);padding:7px 10px;font-weight:600;color:var(--gray700)}
+.pg-cell{background:var(--white);padding:4px}
+.pg-cell input{width:100%;padding:5px 6px;border:1px solid var(--gray300);border-radius:4px;
+  font-size:12px;text-align:center;outline:none}
+.pg-cell input:focus{border-color:var(--blue)}
+.pg-total{background:var(--blue-lt);padding:7px 10px;font-weight:700;color:var(--navy);text-align:center}
+.prog-edit-list{display:flex;flex-direction:column;gap:8px}
+.prog-edit-item{border:1px solid var(--gray200);border-radius:var(--radius);padding:12px;background:var(--gray50)}
+.prog-edit-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prog-edit-num{width:22px;height:22px;background:var(--navy);color:var(--white);border-radius:50%;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prog-edit-name{flex:1;font-weight:600;font-size:13px}
+.btn-remove-prog{background:none;border:none;color:var(--gray400);cursor:pointer;font-size:16px;padding:0}
+.btn-remove-prog:hover{color:var(--red)}
+.btn-add-prog{display:flex;align-items:center;gap:6px;padding:10px;border:2px dashed var(--gray300);
+  border-radius:var(--radius);width:100%;background:none;cursor:pointer;color:var(--gray500);
+  font-size:13px;justify-content:center;transition:all .15s}
+.btn-add-prog:hover{border-color:var(--blue);color:var(--blue)}
+.btn-primary{padding:9px 20px;background:var(--blue);color:var(--white);border:none;
+  border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{padding:9px 16px;background:var(--white);color:var(--gray700);
+  border:1px solid var(--gray300);border-radius:var(--radius);font-size:13px;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{background:var(--gray50)}
+.btn-success{padding:9px 20px;background:var(--green);color:var(--white);border:none;
+  border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer}
+
+/* ── 엑셀 가져오기 모달 ── */
+.excel-drop-zone{border:2px dashed var(--gray300);border-radius:var(--radius-lg);padding:48px;
+  text-align:center;background:var(--gray50);cursor:pointer;transition:all .15s}
+.excel-drop-zone:hover,.excel-drop-zone.drag-over{border-color:var(--blue);background:var(--blue-lt)}
+.excel-drop-icon{font-size:40px;margin-bottom:12px}
+.excel-drop-title{font-size:15px;font-weight:700;color:var(--gray700);margin-bottom:6px}
+.excel-drop-sub{font-size:12px;color:var(--gray500)}
+.excel-preview-table{width:100%;border-collapse:collapse;font-size:12px;overflow-x:auto}
+.excel-preview-table th{background:var(--navy);color:var(--white);padding:7px 10px;
+  white-space:nowrap;font-size:11px}
+.excel-preview-table td{padding:7px 10px;border-bottom:1px solid var(--gray100);
+  white-space:nowrap;color:var(--gray700)}
+.excel-preview-table tr:hover td{background:var(--gray50)}
+.excel-preview-wrap{overflow-x:auto;max-height:300px;overflow-y:auto;border:1px solid var(--gray200);border-radius:var(--radius)}
+.excel-status{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--green-lt);border-radius:var(--radius);color:var(--green);font-size:13px;font-weight:600;margin-bottom:14px}
+
+/* ── 알림 토스트 ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:500;
+  background:var(--gray800);color:var(--white);padding:12px 18px;border-radius:var(--radius);
+  font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);
+  transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+
+/* ── 반응형 ── */
+@media(max-width:900px){.sidebar{display:none}.main-content{padding:16px}}
+@media(max-width:600px){.tab-btn{padding:12px 12px;font-size:12px}.stats-row{gap:8px}
+  .stat-card .stat-val{font-size:18px}.detail-panel{width:100vw}.info-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}.ai-grid{grid-template-columns:1fr}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray300);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-icon">🚀</div>
+    <div>
+      <div class="sub">국립청소년우주센터</div>
+      <h1>NYSC AI 운영 아카이브</h1>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-header btn-excel" id="btnExcelImport">📥 엑셀 가져오기</button>
+    <button class="btn-header btn-new" id="btnNewOp">＋ 신규 등록</button>
+    <span class="header-meta">2026 운영년도</span>
+  </div>
+</header>
+
+<!-- ── 탭바 ── -->
+<nav class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="취약">취약</button>
+  <button class="tab-btn" data-tab="학단">학단</button>
+  <button class="tab-btn" data-tab="특성화">특성화</button>
+  <button class="tab-btn" data-tab="공교육">공교육</button>
+  <button class="tab-btn ai-tab" data-tab="AI분석">🤖 AI 분석</button>
+</nav>
+
+<!-- ── 본문 ── -->
+<div class="app-body" id="appBody">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main-content" id="mainContent">
+    <div class="target-dashboard" id="targetDashboard"></div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="ico">🔍</span>
+        <input class="search-input" id="searchInput" type="text" placeholder="단체명 또는 프로그램명 검색…" autocomplete="off">
+      </div>
+      <select class="filter-select" id="filterForm">
+        <option value="">운영형태 전체</option>
+        <option value="2박3일">2박3일</option>
+        <option value="1박2일">1박2일</option>
+        <option value="당일체험">당일체험</option>
+        <option value="온라인">온라인</option>
+      </select>
+      <select class="filter-select" id="filterRegion"><option value="">지역 전체</option></select>
+      <span class="result-info" id="resultInfo"></span>
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="list-table-wrap">
+      <table class="list-table" id="listTable">
+        <thead>
+          <tr>
+            <th>운영ID</th><th>단체명</th><th>세부유형</th><th>운영형태</th>
+            <th>운영일자</th><th class="num">참여인원</th><th>프로그램 구성</th>
+            <th>만족도</th><th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="listBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="icon">📭</div><p>조건에 맞는 운영 건이 없습니다.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── AI 분석 화면 ── -->
+<div class="ai-page" id="aiPage">
+
+  <!-- 히어로: 데이터 기반 AI 업무분석 -->
+  <div class="ai-hero">
+    <h2>🤖 AI 업무분석</h2>
+    <p>아카이브에 저장된 실제 운영 데이터를 정해진 기준으로 집계합니다. 분석 항목을 선택하거나, 입력창에 "항목 + 조건"을 입력해주세요. (예: "2026 취약 만족도", "푸른하늘고등학교 재방문")</p>
+
+    <!-- 무엇을 분석할까요? -->
+    <div class="ai-item-picker">
+      <div class="ai-item-picker-label">무엇을 분석할까요?</div>
+      <div class="ai-item-btns" id="aiItemBtns"></div>
+    </div>
+
+    <div class="ai-query-wrap">
+      <input class="ai-query-input" id="aiQueryInput" type="text"
+        placeholder='예: "2026 취약 만족도" 또는 "푸른하늘고등학교 재방문"'>
+      <button class="btn-ai-ask" id="btnAiAsk">🔍 분석하기</button>
+    </div>
+  </div>
+
+  <!-- AI 필터바 -->
+  <div class="ai-filter-bar" id="aiFilterBar">
+    <span class="ai-filter-label">분석 범위</span>
+    <select class="ai-filter-select" id="afYear">
+      <option value="">연도 전체</option>
+      <option value="2026" selected>2026</option>
+    </select>
+    <div class="ai-filter-divider"></div>
+    <select class="ai-filter-select" id="afCat">
+      <option value="">사업 전체</option>
+      <option value="취약">취약</option>
+      <option value="학단">학단</option>
+      <option value="특성화">특성화</option>
+      <option value="공교육">공교육</option>
+    </select>
+    <select class="ai-filter-select" id="afSub">
+      <option value="">세부유형 전체</option>
+    </select>
+    <div class="ai-filter-divider"></div>
+    <select class="ai-filter-select" id="afForm">
+      <option value="">운영형태 전체</option>
+      <option value="2박3일">2박3일</option>
+      <option value="1박2일">1박2일</option>
+      <option value="당일체험">당일체험</option>
+      <option value="온라인">온라인</option>
+    </select>
+    <select class="ai-filter-select" id="afTarget">
+      <option value="">대상 전체</option>
+      <option value="초등">초등</option>
+      <option value="중등">중등</option>
+      <option value="고등">고등</option>
+      <option value="혼합">혼합</option>
+      <option value="가족캠프">가족캠프</option>
+      <option value="교원">교원</option>
+    </select>
+    <div class="ai-filter-divider"></div>
+    <input class="ai-filter-org" id="afOrg" type="text" placeholder="기관명 검색">
+    <span class="ai-filter-scope" id="aiFilterScope">전체 32건 분석 중</span>
+  </div>
+
+  <!-- 인식된 항목/조건 또는 안내 문구 -->
+  <div class="ai-parse-hint" id="aiParseHint" style="display:none"></div>
+
+  <!-- 구조화 AI 결과 카드 -->
+  <div class="ai-result-card" id="aiResultCard">
+    <div class="ai-result-header">
+      <div>
+        <div class="ai-result-q" id="arQ"></div>
+        <div class="ai-result-meta" id="arMeta"></div>
+      </div>
+      <span class="ai-result-badge">🤖 AI 분석</span>
+    </div>
+    <div class="ai-result-body">
+      <div class="ai-result-section">
+        <div class="ai-result-section-title"><span class="dot dot-purple"></span>핵심 분석</div>
+        <div class="ai-core-text" id="arCore"></div>
+      </div>
+      <div class="ai-result-section">
+        <div class="ai-result-section-title" style="justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:5px"><span class="dot dot-blue"></span>근거 데이터</span>
+        </div>
+        <div class="ai-evidence-list" id="arEvidence"></div>
+      </div>
+      <div class="ai-result-section">
+        <div class="ai-result-section-title"><span class="dot dot-orange"></span>AI가 발견한 패턴</div>
+        <div class="ai-pattern-list" id="arPattern"></div>
+      </div>
+      <div class="ai-result-section">
+        <div class="ai-result-section-title"><span class="dot dot-green"></span>다음 운영을 위한 제안</div>
+        <div class="ai-suggest-list" id="arSuggest"></div>
+      </div>
+    </div>
+    <div class="ai-ops-ref-panel" id="arOpsRef" style="display:none">
+      <div class="ai-ops-ref-title">📎 분석에 사용된 운영 건 — 클릭하면 상세 화면으로 이동합니다</div>
+      <div class="ai-ops-ref-list" id="arOpsList"></div>
+    </div>
+  </div>
+
+  <!-- 분석 카드 그리드 -->
+  <div class="ai-grid" id="aiGrid"></div>
+</div>
+
+<!-- ── 상세 패널 ── -->
+<div class="detail-overlay" id="detailOverlay"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div class="detail-header-top">
+      <div>
+        <div class="detail-id" id="dId"></div>
+        <div class="detail-title" id="dTitle"></div>
+        <div class="detail-subtitle" id="dSubtitle"></div>
+      </div>
+      <div class="detail-header-btns">
+        <button class="btn-detail-edit" id="btnRevisitRec" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)">🔁 재방문 프로그램 추천</button>
+        <button class="btn-detail-edit" id="btnReportGen" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)">✨ 결과보고서</button>
+        <button class="btn-detail-edit" id="btnDetailEdit">✏️ 수정</button>
+        <button class="detail-close" id="detailClose" aria-label="닫기">✕</button>
+      </div>
+    </div>
+    <div class="detail-badges" id="dBadges"></div>
+  </div>
+  <nav class="detail-tabs" id="detailTabs">
+    <button class="detail-tab-btn active" data-pane="pane-info">기본정보</button>
+    <button class="detail-tab-btn" data-pane="pane-people">참여인원</button>
+    <button class="detail-tab-btn" data-pane="pane-prog">프로그램</button>
+    <button class="detail-tab-btn" data-pane="pane-survey">만족도·효과성</button>
+    <button class="detail-tab-btn" data-pane="pane-voc">VOC·이슈</button>
+    <button class="detail-tab-btn" data-pane="pane-review">운영총평</button>
+  </nav>
+  <div class="detail-body">
+    <div class="detail-tab-pane active" id="pane-info"></div>
+    <div class="detail-tab-pane" id="pane-people"></div>
+    <div class="detail-tab-pane" id="pane-prog"></div>
+    <div class="detail-tab-pane" id="pane-survey"></div>
+    <div class="detail-tab-pane" id="pane-voc"></div>
+    <div class="detail-tab-pane" id="pane-review"></div>
+  </div>
+</div>
+
+<!-- ── 등록/수정 모달 ── -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <span class="modal-title" id="modalTitle">운영 등록</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-steps" id="modalSteps">
+        <button class="step-btn active" data-step="0">① 운영정보</button>
+        <button class="step-btn" data-step="1">② 참여인원</button>
+        <button class="step-btn" data-step="2">③ 프로그램</button>
+        <button class="step-btn" data-step="3">④ 만족도·효과성</button>
+        <button class="step-btn" data-step="4">⑤ VOC·이슈</button>
+        <button class="step-btn" data-step="5">⑥ 운영총평</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" id="btnStepPrev">← 이전</button>
+        <button class="btn-primary" id="btnStepNext">다음 →</button>
+      </div>
+      <button class="btn-success" id="btnModalSave" style="display:none">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 엑셀 가져오기 모달 ── -->
+<div class="modal-backdrop" id="excelModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <span class="modal-title">📥 엑셀 데이터 가져오기</span>
+        <button class="modal-close" id="excelModalClose">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="excelModalBody">
+      <div id="excelDropArea" class="excel-drop-zone">
+        <div class="excel-drop-icon">📊</div>
+        <div class="excel-drop-title">엑셀 파일을 여기에 드래그하거나 클릭해서 선택하세요</div>
+        <div class="excel-drop-sub">지원 형식: .xlsx, .xls, .csv · 운영아카이브 시트 기준</div>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none">
+      </div>
+      <div id="excelPreviewArea" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <span id="excelFileInfo" style="font-size:12px;color:var(--gray500)">파일을 선택해주세요</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" id="btnExcelCancel">취소</button>
+        <button class="btn-success" id="btnExcelApply" style="display:none">✅ 데이터 적용</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 토스트 ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── 결과보고서 초안 모달 ── -->
+<div class="modal-backdrop" id="reportModal">
+  <div class="modal report-modal">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <span class="modal-title">✨ 결과보고서 초안 — <span id="reportModalTitle"></span></span>
+        <button class="modal-close" id="reportModalClose">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="reportModalBody" style="padding:20px 24px"></div>
+    <div class="modal-footer">
+      <div class="report-actions">
+        <button class="btn-copy" id="btnReportCopy">📋 전체 복사</button>
+        <button class="btn-secondary" id="btnReportRegen">🔄 다시 생성</button>
+      </div>
+      <button class="btn-secondary" id="btnReportClose2">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 재방문 프로그램 추천 모달 ── -->
+<div class="modal-backdrop" id="revisitModal">
+  <div class="modal revisit-modal">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <span class="modal-title">🔁 재방문 프로그램 추천</span>
+        <button class="modal-close" id="revisitModalClose">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="revisitModalBody" style="padding:20px 24px"></div>
+    <div class="modal-footer">
+      <span style="font-size:11px;color:var(--gray400)">과거 데이터 기반 참고용 후보입니다. 최종 구성은 담당자가 검토해 결정하세요.</span>
+      <button class="btn-secondary" id="btnRevisitClose2">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 목표값 수정 모달 (프로토타입, localStorage 저장) ── -->
+<div class="modal-backdrop" id="targetModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <span class="modal-title">✏️ 2026 연간 목표값 수정 <span class="demo-badge" style="margin-left:6px">DEMO</span></span>
+        <button class="modal-close" id="targetModalClose">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:20px 24px">
+      <div class="form-hint" style="margin-bottom:14px">
+        여기서 수정한 값은 이 브라우저(현재 PC)의 localStorage에만 저장되는 프로토타입 방식입니다.
+        새로고침 후에도 유지되지만, 다른 PC·다른 브라우저나 다른 사용자와는 공유되지 않습니다.
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label class="form-label">참여인원 목표 (명)</label>
+          <input class="form-control" id="tgPeopleGoal" type="number" min="0"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label class="form-label">수입 목표 (원)</label>
+          <input class="form-control" id="tgRevenueGoal" type="number" min="0"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label class="form-label">현재 수입 실적 (원) <span style="color:var(--gray400);font-weight:500">— DEMO 값</span></label>
+          <input class="form-control" id="tgRevenueActual" type="number" min="0"></div>
+      </div>
+      <div class="form-hint">참여인원 현재실적은 여기서 직접 입력하지 않습니다. 실제 운영 샘플 데이터(아카이브)에서 자동으로 집계됩니다.</div>
+    </div>
+    <div class="modal-footer">
+      <span style="font-size:11px;color:var(--gray400)">저장 시 이 브라우저에만 반영됩니다.</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" id="btnTargetCancel">취소</button>
+        <button class="btn-primary" id="btnTargetSave">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   런타임 스토어 (data.js 로드 후 메모리에서 관리)
+═══════════════════════════════════════════════════════════════════ */
+let RT_OPS      = JSON.parse(JSON.stringify(DB_OPERATIONS));
+let RT_PROGS    = JSON.parse(JSON.stringify(DB_PROGRAMS));
+let RT_SURVEY   = JSON.parse(JSON.stringify(DB_SURVEY));
+let RT_VOC      = JSON.parse(JSON.stringify(DB_VOC));
+let RT_REVIEW   = JSON.parse(JSON.stringify(DB_REVIEW));
+
+/* ── 재방문 프로그램 추천 데모 스토어 (isDemo:true) ──────────────────────
+   ⚠️ RT_OPS/RT_PROGS/RT_SURVEY 와 완전히 분리된 별도 배열입니다.
+   대시보드 통계, render(), renderStats(), AI 전체분석(AI_KB) 등 어떤
+   집계 로직에도 절대 섞이지 않습니다. "재방문 프로그램 추천" 모달
+   내부에서만 조회됩니다. */
+let RT_DEMO_OPS     = JSON.parse(JSON.stringify(DEMO_REVISIT_CASES.operations));
+let RT_DEMO_PROGS   = JSON.parse(JSON.stringify(DEMO_REVISIT_CASES.programs));
+let RT_DEMO_SURVEY  = JSON.parse(JSON.stringify([DEMO_REVISIT_CASES.survey]));
+
+/* ═══════════════════════════════════════════════════════════════════
+   연간 목표 대비 실적 달성 현황 — DEMO 목표/수입 스토어
+   ⚠️ DEMO_TARGETS/DEMO_REVENUE는 data.js에 정의된 "가상 데이터"입니다.
+   DB_OPERATIONS 등 실제 운영 샘플 데이터와 절대 합치지 않습니다.
+   목표값만 localStorage로 사용자가 프로토타입에서 직접 수정할 수 있게 합니다
+   (실적값은 항상 코드가 실제 데이터를 집계하므로 사용자가 직접 입력하지 않음).
+═══════════════════════════════════════════════════════════════════ */
+const LS_KEY_TARGETS='nysc_demo_targets_override';   // 참여인원 목표 override 저장 키
+const LS_KEY_REVENUE='nysc_demo_revenue_override';    // 수입 목표/실적 override 저장 키
+
+// localStorage에 저장된 override 값이 있으면 DEMO 원본에 덮어써서 반환한다.
+// override가 없거나 손상됐으면 DEMO_TARGETS/DEMO_REVENUE 원본을 그대로 사용한다.
+function loadDemoTargets(){
+  const base=JSON.parse(JSON.stringify(DEMO_TARGETS));
+  try{
+    const raw=localStorage.getItem(LS_KEY_TARGETS);
+    if(!raw) return base;
+    const override=JSON.parse(raw);
+    return base.map(t=>{
+      const o=override.find(x=>x.연도===t.연도&&x.사업분류===t.사업분류&&x.지표코드===t.지표코드);
+      return o&&typeof o.목표값==='number' ? {...t, 목표값:o.목표값} : t;
+    });
+  }catch(e){ return base; } // 저장값이 손상된 경우 안전하게 원본 DEMO 값으로 폴백
+}
+function loadDemoRevenue(){
+  const base=JSON.parse(JSON.stringify(DEMO_REVENUE));
+  try{
+    const raw=localStorage.getItem(LS_KEY_REVENUE);
+    if(!raw) return base;
+    const override=JSON.parse(raw);
+    return base.map(r=>{
+      const o=override.find(x=>x.연도===r.연도&&x.사업분류===r.사업분류);
+      if(!o) return r;
+      const next={...r};
+      if(typeof o.수입목표==='number') next.수입목표=o.수입목표;
+      if(typeof o.현재수입==='number') next.현재수입=o.현재수입;
+      return next;
+    });
+  }catch(e){ return base; }
+}
+let RT_DEMO_TARGETS = loadDemoTargets();
+let RT_DEMO_REVENUE = loadDemoRevenue();
+
+// 목표값(참여인원)을 localStorage에 저장한다. 페이지 새로고침 후에도 유지되지만
+// 이 브라우저(이 PC의 이 브라우저)에만 저장되는 프로토타입용 방식이며 공용 DB가 아니다.
+function saveDemoTargetOverride(연도,사업분류,지표코드,목표값){
+  let list=[];
+  try{ list=JSON.parse(localStorage.getItem(LS_KEY_TARGETS)||'[]'); }catch(e){ list=[]; }
+  const idx=list.findIndex(x=>x.연도===연도&&x.사업분류===사업분류&&x.지표코드===지표코드);
+  const rec={연도,사업분류,지표코드,목표값};
+  if(idx>=0) list[idx]=rec; else list.push(rec);
+  localStorage.setItem(LS_KEY_TARGETS, JSON.stringify(list));
+  RT_DEMO_TARGETS=loadDemoTargets();
+}
+function saveDemoRevenueOverride(연도,사업분류,수입목표,현재수입){
+  let list=[];
+  try{ list=JSON.parse(localStorage.getItem(LS_KEY_REVENUE)||'[]'); }catch(e){ list=[]; }
+  const idx=list.findIndex(x=>x.연도===연도&&x.사업분류===사업분류);
+  const rec={연도,사업분류,수입목표,현재수입};
+  if(idx>=0) list[idx]=rec; else list.push(rec);
+  localStorage.setItem(LS_KEY_REVENUE, JSON.stringify(list));
+  RT_DEMO_REVENUE=loadDemoRevenue();
+}
+
+// 참여인원 "현재실적" — 기존 운영 샘플 데이터(RT_OPS)에서 실제로 집계한다.
+// 데모 값이 아니라 실제 아카이브 데이터 집계값이며, 순인원/연인원 산정기준이
+// 명확히 확인되지 않았으므로 화면 표시 문구는 항상 "샘플 운영데이터 집계"로 한다.
+function getPeopleActual(연도,사업분류){
+  let ops=RT_OPS.filter(o=>o.id.startsWith(연도+'-'));
+  if(사업분류&&사업분류!=='전체') ops=ops.filter(o=>o.사업분류===사업분류);
+  return ops.reduce((s,o)=>s+(o.인원.전체||0),0);
+}
+
+// 목표/실적 → 달성률·잔여(초과) 계산 공통 함수. 대시보드와 AI 실적목표가 동일하게 사용한다.
+// 달성률 = 현재실적 / 목표 × 100. 초과 시 100%로 제한하지 않는다.
+function calcAchievement(target,actual){
+  const t=Number(target)||0, a=Number(actual)||0;
+  const rate=t>0 ? (a/t*100) : 0;
+  const diff=a-t; // 양수=초과, 음수=잔여
+  return {
+    target:t, actual:a,
+    rate: Number(rate.toFixed(1)),
+    isOver: diff>=0,
+    remain: Math.abs(diff) // 잔여(미달) 또는 초과 수량의 절댓값
+  };
+}
+
+// 참여인원 목표값을 조회 (연도/사업분류 기준, DEMO override 포함)
+function getPeopleTarget(연도,사업분류){
+  const rec=RT_DEMO_TARGETS.find(t=>t.연도===연도&&t.사업분류===(사업분류||'전체')&&t.지표코드==='참여인원');
+  return rec ? rec.목표값 : 0;
+}
+function getRevenueRecord(연도,사업분류){
+  return RT_DEMO_REVENUE.find(r=>r.연도===연도&&r.사업분류===(사업분류||'전체')) || null;
+}
+
+/* ── 헬퍼 (RT 기반) ── */
+function rtGetProgs(id){ return RT_PROGS.filter(p=>p.운영ID===id).sort((a,b)=>a.순번-b.순번); }
+function rtProgSummary(id){
+  const p=rtGetProgs(id); if(!p.length) return '-';
+  return p.map(x=>x.프로그램명).join(' · ')+` (${p.length}종)`;
+}
+function rtProgCount(id){ return RT_PROGS.filter(p=>p.운영ID===id).length; }
+function rtSurvey(id){ return RT_SURVEY.find(s=>s.운영ID===id)||null; }
+function rtVOC(id){ return RT_VOC.find(v=>v.운영ID===id)||null; }
+function rtReview(id){ return RT_REVIEW.find(r=>r.운영ID===id)||null; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   재방문 프로그램 추천 — 데이터 조회 헬퍼
+   ※ 기관 고유 ID가 없어 1차 구현은 "단체명" 문자열을 기준으로 매칭한다.
+     fuzzy matching(유사 문자열 자동 동일판정)은 사용하지 않는다.
+     허용하는 정규화는 앞뒤 공백 제거 + 연속 공백 정리뿐이다.
+═══════════════════════════════════════════════════════════════════ */
+
+// 단체명 정규화: 앞뒤 공백 제거 + 연속 공백을 단일 공백으로 정리 (그 이상의 유사매칭 금지)
+function normOrgName(name){
+  return (name||'').trim().replace(/\s+/g,' ');
+}
+
+// 특정 운영 건(현재 상세보기 중인 건)과 동일 단체명의 과거 운영 이력을 조회한다.
+// - 완전일치(정규화 후)만 "과거 방문 이력"으로 확정한다.
+// - 데모 스토어(RT_DEMO_OPS)도 함께 검색 대상에 포함한다 (재방문 기능 테스트 목적).
+// - excludeId: 현재 보고 있는 운영 건 자신은 이력 목록에서 제외
+function findPastVisitsByOrg(orgName, excludeId){
+  const target = normOrgName(orgName);
+  if(!target) return [];
+  const all = [...RT_OPS, ...RT_DEMO_OPS];
+  return all
+    .filter(o => o.id !== excludeId && normOrgName(o.단체명) === target)
+    .sort((a,b) => (a.운영시작일||'').localeCompare(b.운영시작일||'')); // 오래된 순
+}
+
+// 기관명 검색 (AI 분석 화면 진입점용): 완전일치 강제 대신 "부분 문자열 포함" 검색으로
+// 후보를 노출하고, 최종 확정은 항상 사용자의 명시적 선택에 맡긴다 (fuzzy matching 아님).
+function searchOrgByName(query){
+  const q = normOrgName(query);
+  if(!q) return [];
+  const all = [...RT_OPS, ...RT_DEMO_OPS];
+  const matched = all.filter(o => normOrgName(o.단체명).includes(q));
+  // 동일 단체명끼리 그룹화하여 "몇 건의 방문 이력이 있는지"와 함께 후보로 제시
+  const groups = new Map();
+  matched.forEach(o=>{
+    const key = normOrgName(o.단체명);
+    if(!groups.has(key)) groups.set(key, { 단체명:o.단체명, 지역:o.지역, ops:[] });
+    groups.get(key).ops.push(o);
+  });
+  return [...groups.values()].sort((a,b)=>b.ops.length-a.ops.length);
+}
+
+// 특정 운영ID의 프로그램 목록 조회 (실데이터+데모 스토어 겸용)
+function getProgsAnyStore(opId){
+  const fromReal = RT_PROGS.filter(p=>p.운영ID===opId);
+  if(fromReal.length) return fromReal.sort((a,b)=>a.순번-b.순번);
+  return RT_DEMO_PROGS.filter(p=>p.운영ID===opId).sort((a,b)=>a.순번-b.순번);
+}
+
+// 특정 운영ID의 만족도 조회 (실데이터+데모 스토어 겸용) — 운영 건 전체 단위
+function getSurveyAnyStore(opId){
+  return RT_SURVEY.find(s=>s.운영ID===opId) || RT_DEMO_SURVEY.find(s=>s.운영ID===opId) || null;
+}
+
+// 프로그램 중복 판단
+// - 과거 프로그램명 Set을 만들고, 전체 DB_PROGRAMS(실데이터 전체)에 등장한 프로그램명 중
+//   과거 Set에 없는 것을 "해당 기관이 경험하지 않은 프로그램 후보"로 뽑는다.
+// - 이 결과는 "센터가 운영 가능한 전체 프로그램"이 아니라, "과거 운영 데이터에서
+//   확인된 미운영 프로그램 후보"라는 제한적 의미임을 호출부에서 반드시 표시해야 한다.
+function analyzeRevisitPrograms(pastVisitId){
+  const pastProgs = getProgsAnyStore(pastVisitId);
+  const pastNames = pastProgs.map(p=>p.프로그램명);
+  const pastSet = new Set(pastNames);
+
+  // 전체 운영 데이터(RT_PROGS, 데모 제외)에 등장한 프로그램명 전체 집합 — 등장 빈도도 함께 집계
+  const freq = new Map();
+  RT_PROGS.forEach(p=>{ freq.set(p.프로그램명, (freq.get(p.프로그램명)||0)+1); });
+  const allNames = [...freq.keys()];
+
+  const candidateNames = allNames.filter(n => !pastSet.has(n));
+
+  return {
+    pastPrograms: pastProgs,                 // ① 과거 운영 프로그램 (원본 레코드)
+    duplicateNames: pastNames,               // ② 중복으로 제외된 프로그램명 목록 (=pastNames와 동일 집합)
+    candidatePrograms: candidateNames.map(n => ({
+      프로그램명: n,
+      등장횟수: freq.get(n)   // 전체 운영 데이터에서 몇 건에 등장했는지 — 유일하게 근거로 쓸 수 있는 사실
+    })).sort((a,b)=>b.등장횟수-a.등장횟수)
+  };
+}
+
+/* ── 인원 합산 헬퍼 ── */
+function calcPeople(inp){
+  const g=(k)=>parseInt(inp[k])||0;
+  const levels=[['초',['1','2','3','4','5','6']],['중',['1','2','3']],['고',['1','2','3']]];
+  let 청소년남=0,청소년여=0;
+  const out={...inp};
+  levels.forEach(([lv,yrs])=>{
+    let lm=0,lf=0;
+    yrs.forEach(y=>{ lm+=g(lv+y+'남'); lf+=g(lv+y+'여'); });
+    out[lv+'남']=lm; out[lv+'여']=lf;
+    청소년남+=lm; 청소년여+=lf;
+  });
+  out.청소년남=청소년남; out.청소년여=청소년여;
+  out.청소년총=청소년남+청소년여;
+  // 분리된 세 필드를 개별 합산
+  out.인솔교사=g('인솔교사');
+  out.보호자  =g('보호자');
+  out.성인    =g('성인');
+  // 전체 = 청소년총 + 인솔교사 + 보호자 + 성인
+  out.전체=out.청소년총+out.인솔교사+out.보호자+out.성인;
+  return out;
+}
+
+/* ── 사업유형별 "비청소년" 인원 명칭·값 결정 ── */
+function getAdultLabel(op){
+  if(op.세부유형==='교원연수') return '성인';
+  if(op.세부유형==='가족캠프') return '보호자';
+  return '인솔교사';
+}
+function getAdultCount(inp, op){
+  if(op.세부유형==='교원연수') return parseInt(inp.성인)||0;
+  if(op.세부유형==='가족캠프') return parseInt(inp.보호자)||0;
+  return parseInt(inp.인솔교사)||0;
+}
+// 전체 참여인원 설명 문구 (대시보드 stat-sub 등에서 사용)
+function getPeopleSubLabel(tab){
+  if(tab==='공교육') return '성인(교원연수 기준)';
+  return '청소년 + 인솔교사';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   앱 상태
+═══════════════════════════════════════════════════════════════════ */
+const state = { tab:'취약', subtype:'전체', search:'', filterForm:'', filterRegion:'', selectedId:null };
+
+/* ═══════════════════════════════════════════════════════════════════
+   초기화
+═══════════════════════════════════════════════════════════════════ */
+function init(){
+  buildRegionFilter();
+  bindEvents();
+  render();
+}
+
+function buildRegionFilter(){
+  const regions=[...new Set(RT_OPS.map(o=>o.지역))].sort();
+  const sel=document.getElementById('filterRegion');
+  regions.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   이벤트 바인딩
+═══════════════════════════════════════════════════════════════════ */
+function bindEvents(){
+  // 탭
+  document.getElementById('tabBar').addEventListener('click',e=>{
+    const btn=e.target.closest('.tab-btn'); if(!btn) return;
+    const t=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+    state.tab=t; state.subtype='전체'; state.search=''; state.filterForm=''; state.filterRegion='';
+    document.getElementById('searchInput').value='';
+    document.getElementById('filterForm').value='';
+    document.getElementById('filterRegion').value='';
+    if(t==='AI분석'){ showAIPage(); }
+    else { hideAIPage(); render(); }
+  });
+  // 사이드바
+  document.getElementById('sidebar').addEventListener('click',e=>{
+    const btn=e.target.closest('.subtype-btn'); if(!btn) return;
+    state.subtype=btn.dataset.sub; renderSidebar(); renderStats(); renderList();
+  });
+  // 검색
+  document.getElementById('searchInput').addEventListener('input',e=>{ state.search=e.target.value.trim(); renderList(); });
+  // 필터
+  document.getElementById('filterForm').addEventListener('change',e=>{ state.filterForm=e.target.value; renderList(); });
+  document.getElementById('filterRegion').addEventListener('change',e=>{ state.filterRegion=e.target.value; renderList(); });
+  // 상세 닫기
+  document.getElementById('detailClose').addEventListener('click',closeDetail);
+  document.getElementById('detailOverlay').addEventListener('click',closeDetail);
+  // 상세 탭
+  document.getElementById('detailTabs').addEventListener('click',e=>{
+    const btn=e.target.closest('.detail-tab-btn'); if(!btn) return;
+    document.querySelectorAll('.detail-tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.detail-tab-pane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.pane).classList.add('active');
+  });
+  // 상세 수정 버튼
+  document.getElementById('btnDetailEdit').addEventListener('click',()=>{ if(state.selectedId) openEditModal(state.selectedId); });
+  // 신규 등록
+  document.getElementById('btnNewOp').addEventListener('click',()=>openEditModal(null));
+  // 모달 닫기
+  document.getElementById('modalClose').addEventListener('click',closeEditModal);
+  document.getElementById('editModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeEditModal(); });
+  // 모달 스텝
+  document.getElementById('modalSteps').addEventListener('click',e=>{
+    const btn=e.target.closest('.step-btn'); if(!btn) return;
+    goToStep(parseInt(btn.dataset.step));
+  });
+  document.getElementById('btnStepPrev').addEventListener('click',()=>goToStep(modalState.step-1));
+  document.getElementById('btnStepNext').addEventListener('click',()=>goToStep(modalState.step+1));
+  document.getElementById('btnModalSave').addEventListener('click',saveModal);
+  // 엑셀 가져오기
+  document.getElementById('btnExcelImport').addEventListener('click',openExcelModal);
+  document.getElementById('excelModalClose').addEventListener('click',closeExcelModal);
+  document.getElementById('btnExcelCancel').addEventListener('click',closeExcelModal);
+  document.getElementById('excelModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeExcelModal(); });
+  const dropArea=document.getElementById('excelDropArea');
+  dropArea.addEventListener('click',()=>document.getElementById('excelFileInput').click());
+  dropArea.addEventListener('dragover',e=>{ e.preventDefault(); dropArea.classList.add('drag-over'); });
+  dropArea.addEventListener('dragleave',()=>dropArea.classList.remove('drag-over'));
+  dropArea.addEventListener('drop',e=>{ e.preventDefault(); dropArea.classList.remove('drag-over');
+    if(e.dataTransfer.files[0]) handleExcelFile(e.dataTransfer.files[0]); });
+  document.getElementById('excelFileInput').addEventListener('change',e=>{ if(e.target.files[0]) handleExcelFile(e.target.files[0]); });
+  document.getElementById('btnExcelApply').addEventListener('click',applyExcelData);
+  // AI 분석
+  document.getElementById('btnAiAsk').addEventListener('click',runAiQuery);
+  document.getElementById('aiQueryInput').addEventListener('keydown',e=>{ if(e.key==='Enter') runAiQuery(); });
+  document.getElementById('aiPage').addEventListener('click',e=>{
+    const chip=e.target.closest('.ai-chip'); if(!chip) return;
+    if(!chip.dataset.q) return; // data-q가 없는 칩(재방문 추천 등)은 별도 onclick으로 처리
+    document.getElementById('aiQueryInput').value=chip.dataset.q;
+    runAiQuery();
+  });
+  // AI 필터
+  ['afYear','afCat','afSub','afForm','afTarget'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change',()=>{ updateAiFilterScope(); buildAICards(); });
+  });
+  document.getElementById('afCat').addEventListener('change',e=>{
+    buildSubtypeFilter(e.target.value);
+  });
+  document.getElementById('afOrg').addEventListener('input',()=>{ updateAiFilterScope(); buildAICards(); });
+  // AI 업무분석 — 분석 항목 버튼 (직접 클릭 시에도 실행 성공하면 검색창의 이전 문구를 비운다)
+  document.getElementById('aiItemBtns').addEventListener('click',e=>{
+    const btn=e.target.closest('.ai-item-btn'); if(!btn) return;
+    if(runAiAnalysisItem(btn.dataset.item)) clearAiQueryInput();
+  });
+  // 결과보고서
+  document.getElementById('btnReportGen').addEventListener('click',()=>{ if(state.selectedId) openReportModal(state.selectedId); });
+  document.getElementById('reportModalClose').addEventListener('click',closeReportModal);
+  document.getElementById('btnReportClose2').addEventListener('click',closeReportModal);
+  document.getElementById('reportModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeReportModal(); });
+  document.getElementById('btnReportCopy').addEventListener('click',copyReport);
+  document.getElementById('btnReportRegen').addEventListener('click',()=>{ if(state.selectedId) openReportModal(state.selectedId); });
+  // 재방문 프로그램 추천
+  document.getElementById('btnRevisitRec').addEventListener('click',()=>{ if(state.selectedId) openRevisitModal(state.selectedId); });
+  document.getElementById('revisitModalClose').addEventListener('click',closeRevisitModal);
+  document.getElementById('btnRevisitClose2').addEventListener('click',closeRevisitModal);
+  document.getElementById('revisitModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeRevisitModal(); });
+  // 연간 목표값 수정 (localStorage 저장, 프로토타입 전용)
+  document.getElementById('targetDashboard').addEventListener('click',e=>{
+    if(e.target.closest('#btnTargetEdit')) openTargetModal();
+  });
+  document.getElementById('targetModalClose').addEventListener('click',closeTargetModal);
+  document.getElementById('btnTargetCancel').addEventListener('click',closeTargetModal);
+  document.getElementById('targetModal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeTargetModal(); });
+  document.getElementById('btnTargetSave').addEventListener('click',saveTargetModal);
+  // ESC
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeDetail(); closeEditModal(); closeExcelModal(); closeRevisitModal(); closeTargetModal(); } });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AI 페이지 토글
+═══════════════════════════════════════════════════════════════════ */
+function showAIPage(){
+  document.getElementById('appBody').style.display='none';
+  document.getElementById('aiPage').classList.add('active');
+  document.getElementById('sidebar').style.display='none';
+  renderAIPage();
+}
+function hideAIPage(){
+  document.getElementById('appBody').style.display='';
+  document.getElementById('aiPage').classList.remove('active');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   필터링
+═══════════════════════════════════════════════════════════════════ */
+function getFiltered(){
+  return RT_OPS.filter(op=>{
+    if(op.사업분류!==state.tab) return false;
+    if(state.subtype!=='전체' && op.세부유형!==state.subtype) return false;
+    if(state.filterForm && op.운영형태!==state.filterForm) return false;
+    if(state.filterRegion && op.지역!==state.filterRegion) return false;
+    if(state.search){
+      const q=state.search.toLowerCase();
+      if(!op.단체명.toLowerCase().includes(q) && !rtGetProgs(op.id).some(p=>p.프로그램명.toLowerCase().includes(q))) return false;
+    }
+    return true;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   렌더
+═══════════════════════════════════════════════════════════════════ */
+function render(){ renderTargetDashboard(); renderTabs(); renderSidebar(); renderStats(); renderList(); }
+
+function renderTabs(){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));
+}
+
+function renderSidebar(){
+  const types=SUBTYPES[state.tab]||[];
+  let html=`<div class="sidebar-label">세부유형</div>`;
+  const all=RT_OPS.filter(o=>o.사업분류===state.tab).length;
+  html+=`<button class="subtype-btn ${state.subtype==='전체'?'active':''}" data-sub="전체">전체 <span class="subtype-count">${all}</span></button>`;
+  types.forEach(t=>{
+    const cnt=RT_OPS.filter(o=>o.사업분류===state.tab&&o.세부유형===t).length;
+    html+=`<button class="subtype-btn ${state.subtype===t?'active':''}" data-sub="${t}">${t} <span class="subtype-count">${cnt}</span></button>`;
+  });
+  document.getElementById('sidebar').innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   연간 목표 대비 실적 달성 현황 — 대시보드 KPI 렌더
+   ※ 참여인원 "현재실적"은 RT_OPS(실제 샘플 운영데이터) 집계값이고,
+     목표값(참여인원/수입)과 수입 실적은 DEMO(가상) 데이터임을 배지로 구분한다.
+═══════════════════════════════════════════════════════════════════ */
+function renderTargetDashboard(){
+  const year='2026';
+  const peopleTarget=getPeopleTarget(year,'전체');
+  const peopleActual=getPeopleActual(year,'전체');
+  const people=calcAchievement(peopleTarget,peopleActual);
+
+  const rev=getRevenueRecord(year,'전체');
+  const revenue=rev ? calcAchievement(rev.수입목표,rev.현재수입) : calcAchievement(0,0);
+
+  const fmtWon=(n)=>{
+    n=Number(n)||0;
+    if(n>=100000000) return `${(n/100000000).toFixed(1)}억원`;
+    if(n>=10000) return `${(n/10000).toFixed(0)}만원`;
+    return `${n.toLocaleString()}원`;
+  };
+
+  const peopleBar=Math.min(100, people.rate);
+  const revenueBar=Math.min(100, revenue.rate);
+
+  document.getElementById('targetDashboard').innerHTML=`
+    <div class="target-dashboard-head">
+      <div class="target-dashboard-title">🎯 ${year} 연간 목표 대비 달성 현황 <span class="demo-badge">DEMO 목표·수입</span></div>
+      <button class="btn-target-edit" id="btnTargetEdit">✏️ 목표값 수정</button>
+    </div>
+    <div class="target-kpi-grid">
+      <div class="target-kpi-card">
+        <div class="target-kpi-head">
+          <span class="target-kpi-name">👥 참여인원</span>
+          <span class="target-kpi-src">현재실적: 샘플 운영데이터 집계</span>
+        </div>
+        <div class="target-kpi-nums">
+          <span class="target-kpi-actual">${people.actual.toLocaleString()}<span class="unit">명</span></span>
+          <span class="target-kpi-goal">목표 ${people.target.toLocaleString()}명</span>
+        </div>
+        <div class="target-progress-track"><div class="target-progress-fill ${people.isOver?'over':''}" style="width:${peopleBar}%"></div></div>
+        <div class="target-kpi-foot">
+          <span class="target-kpi-rate ${people.isOver?'over':''}">${people.rate}% 달성</span>
+          <span>${people.isOver?`목표 초과 +${people.remain.toLocaleString()}명`:`잔여 ${people.remain.toLocaleString()}명`}</span>
+        </div>
+      </div>
+      <div class="target-kpi-card">
+        <div class="target-kpi-head">
+          <span class="target-kpi-name">💰 수입</span>
+          <span class="target-kpi-src">목표·실적 모두 DEMO 데이터</span>
+        </div>
+        <div class="target-kpi-nums">
+          <span class="target-kpi-actual">${fmtWon(revenue.actual)}</span>
+          <span class="target-kpi-goal">목표 ${fmtWon(revenue.target)}</span>
+        </div>
+        <div class="target-progress-track"><div class="target-progress-fill ${revenue.isOver?'over':''}" style="width:${revenueBar}%"></div></div>
+        <div class="target-kpi-foot">
+          <span class="target-kpi-rate ${revenue.isOver?'over':''}">${revenue.rate}% 달성</span>
+          <span>${revenue.isOver?`목표 초과 +${fmtWon(revenue.remain)}`:`잔여 ${fmtWon(revenue.remain)}`}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// 목표값 수정 모달 — localStorage에만 저장되는 프로토타입 (공용 DB 아님)
+function openTargetModal(){
+  const year='2026';
+  document.getElementById('tgPeopleGoal').value=getPeopleTarget(year,'전체');
+  const rev=getRevenueRecord(year,'전체');
+  document.getElementById('tgRevenueGoal').value=rev?rev.수입목표:0;
+  document.getElementById('tgRevenueActual').value=rev?rev.현재수입:0;
+  document.getElementById('targetModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeTargetModal(){
+  document.getElementById('targetModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function saveTargetModal(){
+  const year='2026';
+  const peopleGoal=parseInt(document.getElementById('tgPeopleGoal').value)||0;
+  const revenueGoal=parseInt(document.getElementById('tgRevenueGoal').value)||0;
+  const revenueActual=parseInt(document.getElementById('tgRevenueActual').value)||0;
+  saveDemoTargetOverride(year,'전체','참여인원',peopleGoal);
+  saveDemoRevenueOverride(year,'전체',revenueGoal,revenueActual);
+  closeTargetModal();
+  renderTargetDashboard();
+  showToast('목표값이 이 브라우저에 저장되었습니다. (localStorage — 공용 저장소 아님)','success');
+}
+
+function renderStats(){
+  const data=RT_OPS.filter(o=>o.사업분류===state.tab);
+  const totalOps=data.length;
+  const totalPeople=data.reduce((s,o)=>s+(o.인원.전체||0),0);
+  const surveys=data.map(o=>rtSurvey(o.id)).filter(Boolean);
+  const avgSat=surveys.length?(surveys.reduce((s,v)=>s+v.만족도점수,0)/surveys.length).toFixed(1):'-';
+  const totalProgs=data.reduce((s,o)=>s+rtProgCount(o.id),0);
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card">
+      <div class="stat-label">사업 운영</div>
+      <div class="stat-val">${totalOps}<span style="font-size:14px;font-weight:500;color:var(--gray400)">건</span></div>
+      <div class="stat-sub">단체·캠프 기준</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">전체 참여인원</div>
+      <div class="stat-val">${totalPeople.toLocaleString()}<span style="font-size:14px;font-weight:500;color:var(--gray400)">명</span></div>
+      <div class="stat-sub">청소년 + 인솔교사</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">프로그램 운영</div>
+      <div class="stat-val">${totalProgs}<span style="font-size:14px;font-weight:500;color:var(--gray400)">회</span></div>
+      <div class="stat-sub">세부 프로그램 기준</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">평균 만족도</div>
+      <div class="stat-val" style="color:var(--green)">${avgSat}<span style="font-size:14px;font-weight:500;color:var(--gray400)">/100</span></div>
+      <div class="stat-sub">대표 설문 기준</div>
+    </div>`;
+}
+
+function renderList(){
+  const data=getFiltered();
+  const tbody=document.getElementById('listBody');
+  const empty=document.getElementById('emptyState');
+  document.getElementById('resultInfo').textContent=`${data.length}건`;
+  if(!data.length){ tbody.innerHTML=''; empty.style.display=''; return; }
+  empty.style.display='none';
+  tbody.innerHTML=data.map(op=>{
+    const sv=rtSurvey(op.id);
+    const sat=sv?sv.만족도점수:null;
+    const satHtml=sat!==null?`<span style="font-weight:700;color:${sat>=95?'var(--green)':sat>=90?'var(--teal)':'var(--orange)'}">${sat}</span>`:'<span style="color:var(--gray400)">-</span>';
+    const badgeCls=FORM_BADGE[op.운영형태]||'badge-gray';
+    const sel=state.selectedId===op.id?'selected':'';
+    return `<tr class="${sel}" data-id="${op.id}">
+      <td><span style="font-size:11px;color:var(--gray500)">${op.id}</span></td>
+      <td><span class="org-name">${op.단체명}</span></td>
+      <td><span class="badge badge-gray">${op.세부유형}</span></td>
+      <td><span class="badge ${badgeCls}">${op.운영형태}</span></td>
+      <td style="white-space:nowrap;color:var(--gray600)">${op.운영시작일}${op.운영시작일!==op.운영종료일?' ~':''}</td>
+      <td class="num" style="font-weight:600">${(op.인원.전체||0).toLocaleString()}</td>
+      <td><div class="prog-summary">${rtProgSummary(op.id)}</div></td>
+      <td>${satHtml}</td>
+      <td><button class="action-btn btn-edit" data-edit="${op.id}" onclick="event.stopPropagation()">수정</button></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    tr.addEventListener('click',e=>{ if(!e.target.closest('.action-btn')) openDetail(tr.dataset.id); });
+    const editBtn=tr.querySelector('.action-btn[data-edit]');
+    if(editBtn) editBtn.addEventListener('click',e=>{ e.stopPropagation(); openEditModal(editBtn.dataset.edit); });
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   상세 패널
+═══════════════════════════════════════════════════════════════════ */
+function openDetail(id){
+  state.selectedId=id;
+  document.querySelectorAll('#listBody tr').forEach(tr=>tr.classList.toggle('selected',tr.dataset.id===id));
+  const op=RT_OPS.find(o=>o.id===id); if(!op) return;
+  document.getElementById('dId').textContent=op.id;
+  document.getElementById('dTitle').textContent=op.단체명;
+  document.getElementById('dSubtitle').textContent=`${op.사업분류} › ${op.세부유형} · ${op.세부사업명}`;
+  const bc=FORM_BADGE[op.운영형태]||'badge-gray';
+  document.getElementById('dBadges').innerHTML=`
+    <span class="badge ${bc}">${op.운영형태}</span>
+    <span class="badge badge-gray">${op.대상구분}</span>
+    <span class="badge badge-gray">${op.지역}</span>
+    <span class="badge badge-teal">아카이브 ${op.아카이브}</span>`;
+  document.querySelectorAll('.detail-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.detail-tab-pane').forEach(p=>{ p.classList.remove('active'); p.innerHTML=''; });
+  document.querySelector('.detail-tab-btn[data-pane="pane-info"]').classList.add('active');
+  document.getElementById('pane-info').classList.add('active');
+  fillInfo(op); fillPeople(op); fillPrograms(op); fillSurvey(op); fillVOC(op); fillReview(op);
+  document.getElementById('detailOverlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDetail(){
+  state.selectedId=null;
+  document.querySelectorAll('#listBody tr').forEach(tr=>tr.classList.remove('selected'));
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── 기본정보 탭 ── */
+function fillInfo(op){
+  document.getElementById('pane-info').innerHTML=`
+    <div class="section">
+      <div class="section-title">운영 기본 정보</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">운영ID</span><span class="info-val">${op.id}</span></div>
+        <div class="info-item"><span class="info-label">사업분류</span><span class="info-val">${op.사업분류} › ${op.세부유형}</span></div>
+        <div class="info-item"><span class="info-label">세부사업명</span><span class="info-val">${op.세부사업명}</span></div>
+        <div class="info-item"><span class="info-label">단체명</span><span class="info-val">${op.단체명}</span></div>
+        <div class="info-item"><span class="info-label">지역</span><span class="info-val">${op.지역}</span></div>
+        <div class="info-item"><span class="info-label">대상구분</span><span class="info-val">${op.대상구분}</span></div>
+        <div class="info-item"><span class="info-label">운영형태</span><span class="info-val">${op.운영형태}</span></div>
+        <div class="info-item"><span class="info-label">운영일수 / 숙박</span><span class="info-val">${op.운영일수}일 / ${op.숙박일수}박</span></div>
+        <div class="info-item"><span class="info-label">운영시작일</span><span class="info-val">${op.운영시작일}</span></div>
+        <div class="info-item"><span class="info-label">운영종료일</span><span class="info-val">${op.운영종료일}</span></div>
+        <div class="info-item"><span class="info-label">기준 프로그램 수</span><span class="info-val">${op.기준프로그램수}개</span></div>
+        <div class="info-item"><span class="info-label">실제 프로그램 수</span><span class="info-val">${rtProgCount(op.id)}개</span></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">프로그램 구성 요약</div>
+      <div style="background:var(--blue-lt);border-radius:var(--radius);padding:12px 14px;font-size:13px;font-weight:600;color:var(--navy)">${rtProgSummary(op.id)}</div>
+    </div>
+    <div class="section">
+      <div class="section-title">처리 현황</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">만족도 입력</span><span class="info-val">${statusBadge(op.만족도입력)}</span></div>
+        <div class="info-item"><span class="info-label">효과성 입력</span><span class="info-val">${statusBadge(op.효과성입력)}</span></div>
+        <div class="info-item"><span class="info-label">결과보고</span><span class="info-val">${statusBadge(op.결과보고)}</span></div>
+        <div class="info-item"><span class="info-label">아카이브</span><span class="info-val">${statusBadge(op.아카이브)}</span></div>
+      </div>
+    </div>`;
+}
+function statusBadge(v){
+  if(v==='완료') return `<span class="badge badge-green">${v}</span>`;
+  if(v==='진행중') return `<span class="badge badge-orange">${v}</span>`;
+  return `<span class="badge badge-gray">${v||'-'}</span>`;
+}
+
+/* ── 참여인원 탭 (빈 학년 자동 숨김) ── */
+function fillPeople(op){
+  const el=document.getElementById('pane-people');
+  const inp=op.인원;
+  const g=(k)=>parseInt(inp[k])||0;
+  const isTeacher=op.대상구분==='교원';
+  const isFam=op.세부유형==='가족캠프';
+  const adultLabel=getAdultLabel(op);
+  const adultCount=getAdultCount(inp,op);
+
+  // 교원연수 — 성인만
+  if(isTeacher){
+    el.innerHTML=`<div class="section">
+      <div class="section-title">인원 요약</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">성인 참여인원</span><span class="info-val" style="color:var(--navy);font-size:16px">${adultCount.toLocaleString()}명</span></div>
+        <div class="info-item"><span class="info-label">전체 참여인원</span><span class="info-val" style="color:var(--green);font-size:18px;font-weight:800">${(inp.전체||0).toLocaleString()}명</span></div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  // 일반사업/가족캠프 — 청소년 + 인솔교사 or 보호자
+  let html=`<div class="section">
+    <div class="section-title">인원 요약</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">청소년 총인원</span><span class="info-val" style="color:var(--navy);font-size:16px">${(inp.청소년총||0).toLocaleString()}명</span></div>
+      <div class="info-item"><span class="info-label">${adultLabel}</span><span class="info-val" style="color:var(--teal);font-size:16px">${adultCount.toLocaleString()}명</span></div>
+      <div class="info-item"><span class="info-label">전체 참여인원</span><span class="info-val" style="color:var(--green);font-size:18px;font-weight:800">${(inp.전체||0).toLocaleString()}명</span></div>
+      <div class="info-item"><span class="info-label">청소년 남/여</span><span class="info-val">${inp.청소년남||0}명 / ${inp.청소년여||0}명</span></div>
+    </div>
+  </div>`;
+
+  if((inp.청소년총||0)>0){
+    html+=`<div class="section"><div class="section-title">청소년 학년별·성별 인원</div>`;
+    // 초등
+    const 초학년=[['4',g('초4남'),g('초4여')],['5',g('초5남'),g('초5여')],['6',g('초6남'),g('초6여')]];
+    const has초1=g('초1남')+g('초1여')>0;
+    const has초2=g('초2남')+g('초2여')>0;
+    const has초3=g('초3남')+g('초3여')>0;
+    const extra초=[];
+    if(has초1) extra초.unshift(['1',g('초1남'),g('초1여')]);
+    if(has초2) extra초.push(['2',g('초2남'),g('초2여')]);
+    if(has초3) extra초.push(['3',g('초3남'),g('초3여')]);
+    const all초=[...extra초,...초학년].filter(([,m,f])=>m>0||f>0);
+    if(all초.length>0||(inp.초남||0)+(inp.초여||0)>0){
+      html+=popTableBlock('초등',all초.length?all초:초학년,'초',inp,true);
+    }
+    // 중등
+    const 중학년=[['1',g('중1남'),g('중1여')],['2',g('중2남'),g('중2여')],['3',g('중3남'),g('중3여')]];
+    const vis중=중학년.filter(([,m,f])=>m>0||f>0);
+    if(vis중.length>0||(inp.중남||0)+(inp.중여||0)>0){
+      html+=popTableBlock('중등',vis중.length?vis중:중학년,'중',inp,true);
+    }
+    // 고등
+    const 고학년=[['1',g('고1남'),g('고1여')],['2',g('고2남'),g('고2여')],['3',g('고3남'),g('고3여')]];
+    const vis고=고학년.filter(([,m,f])=>m>0||f>0);
+    if(vis고.length>0||(inp.고남||0)+(inp.고여||0)>0){
+      html+=popTableBlock('고등',vis고.length?vis고:고학년,'고',inp,true);
+    }
+    // 합계
+    html+=`<table class="pop-table"><thead><tr>
+      <th class="row-label">최종 합계</th>
+      <th>청소년 남</th><th>청소년 여</th><th>청소년 총</th><th>${adultLabel}</th><th>전체</th>
+    </tr></thead><tbody><tr class="total-row">
+      <td class="row-label">합계</td>
+      <td>${inp.청소년남||0}</td><td>${inp.청소년여||0}</td>
+      <td>${inp.청소년총||0}</td><td>${adultCount}</td><td>${inp.전체||0}</td>
+    </tr></tbody></table>`;
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function popTableBlock(label, rows, prefix, inp, showSub){
+  let th='',td='';
+  rows.forEach(([yr])=>{ th+=`<th colspan="2">${label.slice(0,1)==='초'?'초등 ':''}${yr}학년</th>`; });
+  rows.forEach(([,m,f])=>{ td+=`<td>${m}</td><td>${f}</td>`; });
+  const sub=showSub?`<td class="sub-total">${inp[prefix+'남']||0}</td><td class="sub-total">${inp[prefix+'여']||0}</td>`:'';
+  const subH=showSub?`<th colspan="2">${label.slice(0,1)} 소계</th>`:'';
+  return `<div class="level-block">
+    <span class="level-title">${label}</span>
+    <table class="pop-table"><thead>
+      <tr><th class="row-label">구분</th>${th}${subH}</tr>
+      <tr><th class="row-label"></th>${rows.map(()=>'<th>남</th><th>여</th>').join('')}${showSub?'<th>남</th><th>여</th>':''}</tr>
+    </thead><tbody><tr>
+      <td class="row-label">인원</td>${td}${sub}
+    </tr></tbody></table>
+  </div>`;
+}
+
+/* ── 프로그램 탭 ── */
+function fillPrograms(op){
+  const el=document.getElementById('pane-prog');
+  const progs=rtGetProgs(op.id);
+  if(!progs.length){ el.innerHTML='<div class="no-data">등록된 프로그램 정보가 없습니다.</div>'; return; }
+  el.innerHTML=`<div class="section">
+    <div class="section-title">프로그램 구성 · ${progs.length}종</div>
+    <ul class="prog-list">${progs.map(p=>`
+      <li class="prog-item">
+        <div class="prog-num">${p.순번}</div>
+        <div class="prog-info">
+          <div class="prog-name">${p.프로그램명}</div>
+          <div class="prog-meta">${p.운영일자} · 대상: ${p.대상} · 참여: ${p.운영인원.toLocaleString()}명</div>
+        </div>
+        <div class="prog-time">${p.운영시간}분</div>
+      </li>`).join('')}
+    </ul></div>
+    <div class="section"><div class="section-title">구성 요약</div>
+    <div style="background:var(--blue-lt);border-radius:var(--radius);padding:12px 14px;font-size:13px;font-weight:600;color:var(--navy)">${rtProgSummary(op.id)}</div></div>`;
+}
+
+/* ── 만족도·효과성 탭 ── */
+function fillSurvey(op){
+  const el=document.getElementById('pane-survey');
+  const sv=rtSurvey(op.id);
+  if(!sv){ el.innerHTML='<div class="no-data">설문 결과가 없습니다.</div>'; return; }
+  const sc=v=>v>=95?'high':v>=90?'mid':'low';
+  const rate=(a,b)=>((a/b)*100).toFixed(1);
+  el.innerHTML=`<div class="section"><div class="section-title">정량 결과</div>
+    <div class="score-row">
+      <div class="score-card"><div class="score-val ${sc(sv.만족도점수)}">${sv.만족도점수}</div>
+        <div class="score-label">전체 만족도</div>
+        <div class="score-sub">응답 ${sv.만족도응답자}명 / 대상 ${sv.대상인원}명</div></div>
+      <div class="score-card"><div class="score-val ${sc(sv.효과성점수)}">${sv.효과성점수}</div>
+        <div class="score-label">전체 효과성</div>
+        <div class="score-sub">응답 ${sv.효과성응답자}명 / 대상 ${sv.대상인원}명</div></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>만족도 응답률</span><span>${rate(sv.만족도응답자,sv.대상인원)}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${rate(sv.만족도응답자,sv.대상인원)}%;background:var(--blue)"></div></div>
+    </div>
+    <div class="progress-bar-wrap" style="margin-top:8px">
+      <div class="progress-label"><span>효과성 응답률</span><span>${rate(sv.효과성응답자,sv.대상인원)}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${rate(sv.효과성응답자,sv.대상인원)}%;background:var(--teal)"></div></div>
+    </div></div>
+  <div class="section"><div class="section-title">대표 주관식 의견</div>
+    <div class="quote-box ${sv.만족도의견성격==='개선'?'improve':''}">
+      <div style="font-size:11px;color:var(--gray400);margin-bottom:4px">만족도 · 가장 기억에 남은 점</div>
+      <div class="quote-text">"${sv.만족도주관식}"</div>
+      <span class="quote-tag ${sv.만족도의견성격==='긍정'?'tag-pos':'tag-imp'}">${sv.만족도의견성격}</span>
+    </div>
+    <div class="quote-box ${sv.효과성의견성격==='개선'?'improve':''}">
+      <div style="font-size:11px;color:var(--gray400);margin-bottom:4px">효과성 · 활동 후 변화/도움</div>
+      <div class="quote-text">"${sv.효과성주관식}"</div>
+      <span class="quote-tag ${sv.효과성의견성격==='긍정'?'tag-pos':'tag-imp'}">${sv.효과성의견성격}</span>
+    </div></div>`;
+}
+
+/* ── VOC 탭 ── */
+function fillVOC(op){
+  const el=document.getElementById('pane-voc');
+  const voc=rtVOC(op.id);
+  if(!voc){ el.innerHTML='<div class="no-data">VOC·이슈 기록이 없습니다.</div>'; return; }
+  const stCls=voc.상태==='조치완료'?'status-done':voc.상태==='차기반영'?'status-next':'status-check';
+  el.innerHTML=`<div class="section"><div class="section-title">VOC · 운영이슈 기록</div>
+    <div class="voc-card">
+      <div class="voc-top"><span class="voc-type">[${voc.기록구분}] ${voc.이슈유형}</span>
+        <span class="status-badge ${stCls}">${voc.상태}</span></div>
+      <div class="voc-row"><span class="lbl">발생건수: </span><span class="val">${voc.발생건수}건</span></div>
+      <div class="voc-row" style="margin-top:8px"><div class="lbl" style="margin-bottom:3px">세부내용</div>
+        <div class="val" style="background:var(--gray50);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--gray200)">${voc.세부내용}</div></div>
+      <div class="voc-row" style="margin-top:8px"><div class="lbl" style="margin-bottom:3px">즉시조치</div>
+        <div class="val">${voc.즉시조치}</div></div>
+      <div class="voc-row" style="margin-top:8px"><div class="lbl" style="margin-bottom:3px">담당자 의견</div>
+        <div class="val">${voc.담당자의견}</div></div>
+      <div class="voc-row" style="margin-top:8px"><div class="lbl" style="margin-bottom:3px">개선·재발방지</div>
+        <div class="val" style="background:var(--orange-lt);padding:8px 10px;border-radius:var(--radius);color:var(--orange);font-weight:600">${voc.개선재발방지}</div></div>
+    </div></div>`;
+}
+
+/* ── 운영총평 탭 ── */
+function fillReview(op){
+  const el=document.getElementById('pane-review');
+  const rv=rtReview(op.id);
+  if(!rv){ el.innerHTML='<div class="no-data">운영총평이 없습니다.</div>'; return; }
+  el.innerHTML=`<div class="section"><div class="section-title">담당자 운영총평 · 작성일 ${rv.작성일}</div>
+    <div class="review-block">
+      <div class="review-row"><div class="review-key">✅ 잘된 점</div><div class="review-val">${rv.잘된점}</div></div>
+      <div class="review-row"><div class="review-key">⚠️ 운영 어려움</div><div class="review-val">${rv.운영상어려움}</div></div>
+      <div class="review-row"><div class="review-key">🔧 다음 개선</div><div class="review-val">${rv.다음개선사항}</div></div>
+      <div class="review-row"><div class="review-key">📌 특이사항</div><div class="review-val">${rv.특이사항}</div></div>
+      <div class="review-row"><div class="review-key">☑️ 체크포인트</div><div class="review-val">${rv.체크포인트}</div></div>
+    </div></div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   등록/수정 모달
+═══════════════════════════════════════════════════════════════════ */
+let modalState={step:0,isNew:false,targetId:null,draft:{}};
+
+function openEditModal(id){
+  modalState.isNew=!id;
+  modalState.targetId=id;
+  modalState.step=0;
+  if(id){
+    const op=RT_OPS.find(o=>o.id===id);
+    const sv=rtSurvey(id)||{};
+    const voc=rtVOC(id)||{};
+    const rv=rtReview(id)||{};
+    const progs=rtGetProgs(id);
+    modalState.draft={
+      op:JSON.parse(JSON.stringify(op)),
+      progs:JSON.parse(JSON.stringify(progs)),
+      sv:JSON.parse(JSON.stringify(sv)),
+      voc:JSON.parse(JSON.stringify(voc)),
+      rv:JSON.parse(JSON.stringify(rv))
+    };
+    document.getElementById('modalTitle').textContent='운영 수정 — '+op.단체명;
+  } else {
+    const newId=genNewId();
+    modalState.draft={
+      op:{id:newId,사업분류:'취약',세부유형:'둥근세상만들기',세부사업명:'',단체명:'',지역:'',대상구분:'혼합',
+        운영형태:'2박3일',운영시작일:'',운영종료일:'',운영일수:3,숙박일수:2,기준프로그램수:6,
+        인원:{초1남:0,초1여:0,초2남:0,초2여:0,초3남:0,초3여:0,초4남:0,초4여:0,초5남:0,초5여:0,초6남:0,초6여:0,
+          중1남:0,중1여:0,중2남:0,중2여:0,중3남:0,중3여:0,고1남:0,고1여:0,고2남:0,고2여:0,고3남:0,고3여:0,
+          초남:0,초여:0,중남:0,중여:0,고남:0,고여:0,청소년남:0,청소년여:0,청소년총:0,인솔교사:0,보호자:0,성인:0,전체:0},
+        만족도입력:'미입력',효과성입력:'미입력',결과보고:'미작성',아카이브:'진행중'},
+      progs:[],sv:{},voc:{},rv:{}
+    };
+    document.getElementById('modalTitle').textContent='신규 운영 등록';
+  }
+  document.getElementById('editModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderModalStep(0);
+}
+
+function closeEditModal(){
+  document.getElementById('editModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function genNewId(){
+  const year=new Date().getFullYear();
+  const cats={취약:0,학단:0,특성화:0,공교육:0};
+  RT_OPS.forEach(o=>{
+    const parts=o.id.split('-');
+    if(parts[0]===String(year) && cats[parts[1]]!==undefined){
+      const n=parseInt(parts[2]); if(n>cats[parts[1]]) cats[parts[1]]=n;
+    }
+  });
+  // default 취약
+  const next=String(cats['취약']+1).padStart(3,'0');
+  return `${year}-취약-${next}`;
+}
+
+function goToStep(s){
+  if(s<0||s>5) return;
+  collectStepData(modalState.step);
+  modalState.step=s;
+  renderModalStep(s);
+}
+
+function renderModalStep(s){
+  document.querySelectorAll('.step-btn').forEach((b,i)=>{
+    b.classList.toggle('active',i===s);
+    b.classList.toggle('done',i<s);
+  });
+  document.getElementById('btnStepPrev').style.display=s===0?'none':'';
+  document.getElementById('btnStepNext').style.display=s===5?'none':'';
+  document.getElementById('btnModalSave').style.display=s===5?'':'none';
+  const body=document.getElementById('modalBody');
+  const d=modalState.draft;
+  const op=d.op;
+  if(s===0){
+    body.innerHTML=`
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">사업분류<span class="req">*</span></label>
+          <select class="form-control" id="f_사업분류">
+            ${['취약','학단','특성화','공교육'].map(v=>`<option ${op.사업분류===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div class="form-group"><label class="form-label">세부유형<span class="req">*</span></label>
+          <select class="form-control" id="f_세부유형">${buildSubtypeOptions(op.사업분류,op.세부유형)}</select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">세부사업명</label>
+        <input class="form-control" id="f_세부사업명" value="${op.세부사업명||''}"></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">단체명<span class="req">*</span></label>
+          <input class="form-control" id="f_단체명" value="${op.단체명||''}"></div>
+        <div class="form-group"><label class="form-label">지역</label>
+          <input class="form-control" id="f_지역" value="${op.지역||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">대상구분</label>
+          <select class="form-control" id="f_대상구분">
+            ${['초등','중등','고등','혼합','가족캠프','교원'].map(v=>`<option ${op.대상구분===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div class="form-group"><label class="form-label">운영형태</label>
+          <select class="form-control" id="f_운영형태">
+            ${['2박3일','1박2일','당일체험','온라인'].map(v=>`<option ${op.운영형태===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">운영시작일</label>
+          <input class="form-control" id="f_운영시작일" type="date" value="${op.운영시작일||''}"></div>
+        <div class="form-group"><label class="form-label">운영종료일</label>
+          <input class="form-control" id="f_운영종료일" type="date" value="${op.운영종료일||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">운영일수</label>
+          <input class="form-control" id="f_운영일수" type="number" min="1" value="${op.운영일수||1}"></div>
+        <div class="form-group"><label class="form-label">숙박일수</label>
+          <input class="form-control" id="f_숙박일수" type="number" min="0" value="${op.숙박일수||0}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">기준 프로그램 수</label>
+          <input class="form-control" id="f_기준프로그램수" type="number" min="1" value="${op.기준프로그램수||3}"></div>
+        <div class="form-group"><label class="form-label">아카이브 상태</label>
+          <select class="form-control" id="f_아카이브">
+            ${['진행중','검토중','완료'].map(v=>`<option ${op.아카이브===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>`;
+    document.getElementById('f_사업분류').addEventListener('change',e=>{
+      document.getElementById('f_세부유형').innerHTML=buildSubtypeOptions(e.target.value,'');
+    });
+  }
+  else if(s===1){
+    const inp=op.인원;
+    const levels=[
+      {lv:'초',label:'초등',grades:['1','2','3','4','5','6']},
+      {lv:'중',label:'중등',grades:['1','2','3']},
+      {lv:'고',label:'고등',grades:['1','2','3']}
+    ];
+    let rows='';
+    levels.forEach(({lv,label,grades})=>{
+      grades.forEach(yr=>{
+        const km=lv+yr+'남', kf=lv+yr+'여';
+        rows+=`<div class="review-row">
+          <div class="review-key" style="width:90px;font-size:11px">${label} ${yr}학년</div>
+          <div class="review-val" style="padding:6px 10px;display:flex;gap:12px;align-items:center">
+            <label style="font-size:11px;color:var(--gray500)">남</label>
+            <input type="number" min="0" class="form-control" style="width:70px;text-align:center" id="fp_${km}" value="${parseInt(inp[km])||0}">
+            <label style="font-size:11px;color:var(--gray500)">여</label>
+            <input type="number" min="0" class="form-control" style="width:70px;text-align:center" id="fp_${kf}" value="${parseInt(inp[kf])||0}">
+          </div>
+        </div>`;
+      });
+    });
+    body.innerHTML=`
+      <div class="section"><div class="section-title">청소년 학년별 인원</div>
+      <div class="review-block" style="font-size:12px">${rows}</div>
+      <div class="form-hint" style="margin-top:6px">※ 저장 시 소계·합계가 자동 계산됩니다.</div></div>
+      <div class="section"><div class="section-title">비청소년 인원 (사업유형별)</div>
+      <div class="form-row" style="max-width:200px">
+        <div class="form-group"><label class="form-label">인솔교사</label>
+          <input class="form-control" id="fp_인솔교사" type="number" min="0" value="${parseInt(inp.인솔교사)||0}"></div>
+      </div>
+      <div class="form-row" style="max-width:200px">
+        <div class="form-group"><label class="form-label">보호자 (가족캠프)</label>
+          <input class="form-control" id="fp_보호자" type="number" min="0" value="${parseInt(inp.보호자)||0}"></div>
+      </div>
+      <div class="form-row" style="max-width:200px">
+        <div class="form-group"><label class="form-label">성인 (교원연수)</label>
+          <input class="form-control" id="fp_성인" type="number" min="0" value="${parseInt(inp.성인)||0}"></div>
+      </div>
+      <div class="form-hint">※ 가족캠프는 보호자, 교원연수는 성인, 일반사업은 인솔교사 항목에 입력하세요.</div></div>`;
+  }
+  else if(s===2){
+    const progs=d.progs;
+    body.innerHTML=`<div class="section"><div class="section-title">프로그램 구성</div>
+      <ul class="prog-edit-list" id="progEditList">${progs.map((p,i)=>progEditItem(p,i)).join('')}</ul>
+      <button class="btn-add-prog" id="btnAddProg" style="margin-top:8px">＋ 프로그램 추가</button></div>`;
+    document.getElementById('btnAddProg').addEventListener('click',()=>{
+      collectProgData();
+      const next=d.progs.length+1;
+      d.progs.push({운영ID:op.id,순번:next,프로그램명:'',대상:op.대상구분||'',운영일자:op.운영시작일||'',운영시간:60,운영인원:op.인원.전체||0});
+      document.getElementById('progEditList').innerHTML=d.progs.map((p,i)=>progEditItem(p,i)).join('');
+      bindProgRemove();
+    });
+    bindProgRemove();
+  }
+  else if(s===3){
+    const sv=d.sv;
+    body.innerHTML=`
+      <div class="section"><div class="section-title">만족도 정량</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">만족도 점수 (100점 기준)</label>
+          <input class="form-control" id="fs_만족도점수" type="number" step="0.1" min="0" max="100" value="${sv.만족도점수||''}"></div>
+        <div class="form-group"><label class="form-label">만족도 응답자 수</label>
+          <input class="form-control" id="fs_만족도응답자" type="number" min="0" value="${sv.만족도응답자||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">효과성 점수</label>
+          <input class="form-control" id="fs_효과성점수" type="number" step="0.1" min="0" max="100" value="${sv.효과성점수||''}"></div>
+        <div class="form-group"><label class="form-label">효과성 응답자 수</label>
+          <input class="form-control" id="fs_효과성응답자" type="number" min="0" value="${sv.효과성응답자||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">대상 인원 (설문 기준)</label>
+          <input class="form-control" id="fs_대상인원" type="number" min="0" value="${sv.대상인원||op.인원.전체||''}"></div>
+      </div></div>
+      <div class="section"><div class="section-title">대표 주관식 의견</div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">만족도 대표 주관식</label>
+        <textarea class="form-control" id="fs_만족도주관식">${sv.만족도주관식||''}</textarea></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">만족도 의견 성격</label>
+          <select class="form-control" id="fs_만족도의견성격">
+            ${['긍정','개선','기타'].map(v=>`<option ${sv.만족도의견성격===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">효과성 대표 주관식</label>
+        <textarea class="form-control" id="fs_효과성주관식">${sv.효과성주관식||''}</textarea></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">효과성 의견 성격</label>
+          <select class="form-control" id="fs_효과성의견성격">
+            ${['긍정','개선','기타'].map(v=>`<option ${sv.효과성의견성격===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div></div>`;
+  }
+  else if(s===4){
+    const voc=d.voc;
+    body.innerHTML=`<div class="section"><div class="section-title">VOC · 운영이슈</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">기록구분</label>
+          <select class="form-control" id="fv_기록구분">
+            ${['VOC','운영이슈','CS'].map(v=>`<option ${voc.기록구분===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div class="form-group"><label class="form-label">이슈유형</label>
+          <select class="form-control" id="fv_이슈유형">
+            ${['시설','프로그램','지도자','행정·안내','일정','식사','숙박','기타'].map(v=>`<option ${voc.이슈유형===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">세부내용</label>
+        <textarea class="form-control" id="fv_세부내용">${voc.세부내용||''}</textarea></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">발생건수</label>
+          <input class="form-control" id="fv_발생건수" type="number" min="0" value="${voc.발생건수||1}"></div>
+        <div class="form-group"><label class="form-label">처리 상태</label>
+          <select class="form-control" id="fv_상태">
+            ${['차기반영','조치완료','확인중'].map(v=>`<option ${voc.상태===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">즉시조치</label>
+        <input class="form-control" id="fv_즉시조치" value="${voc.즉시조치||''}"></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">담당자 의견</label>
+        <textarea class="form-control" id="fv_담당자의견">${voc.담당자의견||''}</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">개선·재발방지</label>
+        <textarea class="form-control" id="fv_개선재발방지">${voc.개선재발방지||''}</textarea></div></div>
+    </div>`;
+  }
+  else if(s===5){
+    const rv=d.rv;
+    body.innerHTML=`<div class="section"><div class="section-title">담당자 운영총평</div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">✅ 잘된 점</label>
+        <textarea class="form-control" id="fr_잘된점">${rv.잘된점||''}</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">⚠️ 운영상 어려움</label>
+        <textarea class="form-control" id="fr_운영상어려움">${rv.운영상어려움||''}</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">🔧 다음 운영 개선사항</label>
+        <textarea class="form-control" id="fr_다음개선사항">${rv.다음개선사항||''}</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">📌 특이사항</label>
+        <textarea class="form-control" id="fr_특이사항">${rv.특이사항||''}</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label class="form-label">☑️ 다음 운영 체크포인트</label>
+        <textarea class="form-control" id="fr_체크포인트">${rv.체크포인트||''}</textarea></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">작성일</label>
+        <input class="form-control" id="fr_작성일" type="date" value="${rv.작성일||new Date().toISOString().slice(0,10)}"></div></div>
+    </div>`;
+  }
+}
+
+function buildSubtypeOptions(sab,sel){
+  const opts=(SUBTYPES[sab]||[]);
+  return opts.map(v=>`<option ${sel===v?'selected':''}>${v}</option>`).join('');
+}
+
+function progEditItem(p,i){
+  return `<li class="prog-edit-item" data-pidx="${i}">
+    <div class="prog-edit-top">
+      <div class="prog-edit-num">${p.순번}</div>
+      <div class="prog-edit-name">프로그램 ${p.순번}</div>
+      <button class="btn-remove-prog" data-ridx="${i}" title="삭제">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">프로그램명<span class="req">*</span></label>
+        <input class="form-control pe-name" data-pidx="${i}" value="${p.프로그램명||''}"></div>
+      <div class="form-group"><label class="form-label">대상</label>
+        <input class="form-control pe-target" data-pidx="${i}" value="${p.대상||''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">운영일자</label>
+        <input class="form-control pe-date" data-pidx="${i}" type="date" value="${p.운영일자||''}"></div>
+      <div class="form-group"><label class="form-label">운영시간(분)</label>
+        <input class="form-control pe-time" data-pidx="${i}" type="number" min="0" value="${p.운영시간||60}"></div>
+    </div>
+  </li>`;
+}
+
+function bindProgRemove(){
+  document.querySelectorAll('.btn-remove-prog').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      collectProgData();
+      const idx=parseInt(btn.dataset.ridx);
+      modalState.draft.progs.splice(idx,1);
+      modalState.draft.progs.forEach((p,i)=>{ p.순번=i+1; });
+      document.getElementById('progEditList').innerHTML=modalState.draft.progs.map((p,i)=>progEditItem(p,i)).join('');
+      bindProgRemove();
+    });
+  });
+}
+
+function collectProgData(){
+  document.querySelectorAll('.pe-name').forEach(el=>{
+    const i=parseInt(el.dataset.pidx);
+    if(modalState.draft.progs[i]) modalState.draft.progs[i].프로그램명=el.value;
+  });
+  document.querySelectorAll('.pe-target').forEach(el=>{
+    const i=parseInt(el.dataset.pidx);
+    if(modalState.draft.progs[i]) modalState.draft.progs[i].대상=el.value;
+  });
+  document.querySelectorAll('.pe-date').forEach(el=>{
+    const i=parseInt(el.dataset.pidx);
+    if(modalState.draft.progs[i]) modalState.draft.progs[i].운영일자=el.value;
+  });
+  document.querySelectorAll('.pe-time').forEach(el=>{
+    const i=parseInt(el.dataset.pidx);
+    if(modalState.draft.progs[i]) modalState.draft.progs[i].운영시간=parseInt(el.value)||60;
+  });
+}
+
+function collectStepData(s){
+  const d=modalState.draft; const op=d.op;
+  const gv=(id)=>{ const el=document.getElementById(id); return el?el.value:''; };
+  const gi=(id)=>{ const el=document.getElementById(id); return el?parseInt(el.value)||0:0; };
+  const gf=(id)=>{ const el=document.getElementById(id); return el?parseFloat(el.value)||0:0; };
+  if(s===0){
+    op.사업분류=gv('f_사업분류')||op.사업분류;
+    op.세부유형=gv('f_세부유형')||op.세부유형;
+    op.세부사업명=gv('f_세부사업명');
+    op.단체명=gv('f_단체명');
+    op.지역=gv('f_지역');
+    op.대상구분=gv('f_대상구분');
+    op.운영형태=gv('f_운영형태');
+    op.운영시작일=gv('f_운영시작일');
+    op.운영종료일=gv('f_운영종료일');
+    op.운영일수=gi('f_운영일수');
+    op.숙박일수=gi('f_숙박일수');
+    op.기준프로그램수=gi('f_기준프로그램수');
+    op.아카이브=gv('f_아카이브');
+    // 신규 등록 시 ID 사업분류 반영
+    if(modalState.isNew){ const y=op.id.split('-')[0]; const seq=op.id.split('-')[2]; op.id=`${y}-${op.사업분류}-${seq}`; modalState.targetId=op.id; }
+  } else if(s===1){
+    const keys=['초1남','초1여','초2남','초2여','초3남','초3여','초4남','초4여','초5남','초5여','초6남','초6여',
+      '중1남','중1여','중2남','중2여','중3남','중3여','고1남','고1여','고2남','고2여','고3남','고3여','인솔교사','보호자','성인'];
+    const raw={};
+    keys.forEach(k=>{ raw[k]=gi('fp_'+k); });
+    op.인원=calcPeople(raw);
+  } else if(s===2){
+    collectProgData();
+  } else if(s===3){
+    const sv={운영ID:op.id,만족도점수:gf('fs_만족도점수'),만족도응답자:gi('fs_만족도응답자'),
+      효과성점수:gf('fs_효과성점수'),효과성응답자:gi('fs_효과성응답자'),대상인원:gi('fs_대상인원')||op.인원.전체,
+      만족도주관식:gv('fs_만족도주관식'),만족도의견성격:gv('fs_만족도의견성격'),
+      효과성주관식:gv('fs_효과성주관식'),효과성의견성격:gv('fs_효과성의견성격')};
+    d.sv=sv;
+  } else if(s===4){
+    d.voc={운영ID:op.id,기록구분:gv('fv_기록구분'),이슈유형:gv('fv_이슈유형'),
+      세부내용:gv('fv_세부내용'),발생건수:gi('fv_발생건수'),즉시조치:gv('fv_즉시조치'),
+      담당자의견:gv('fv_담당자의견'),개선재발방지:gv('fv_개선재발방지'),상태:gv('fv_상태')};
+  } else if(s===5){
+    d.rv={운영ID:op.id,잘된점:gv('fr_잘된점'),운영상어려움:gv('fr_운영상어려움'),
+      다음개선사항:gv('fr_다음개선사항'),특이사항:gv('fr_특이사항'),
+      체크포인트:gv('fr_체크포인트'),작성일:gv('fr_작성일')};
+  }
+}
+
+function saveModal(){
+  collectStepData(5);
+  const d=modalState.draft;
+  const op=d.op;
+  // 인원 재계산 (혹시 스텝1 미방문시)
+  op.인원=calcPeople(op.인원);
+  if(modalState.isNew){
+    RT_OPS.push(op);
+  } else {
+    const idx=RT_OPS.findIndex(o=>o.id===op.id);
+    if(idx>=0) RT_OPS[idx]=op;
+  }
+  // 프로그램 교체
+  RT_PROGS=RT_PROGS.filter(p=>p.운영ID!==op.id);
+  d.progs.forEach(p=>{ p.운영ID=op.id; RT_PROGS.push(p); });
+  // 설문
+  if(d.sv.만족도점수){ RT_SURVEY=RT_SURVEY.filter(s=>s.운영ID!==op.id); RT_SURVEY.push(d.sv); }
+  // VOC
+  if(d.voc.세부내용){ RT_VOC=RT_VOC.filter(v=>v.운영ID!==op.id); RT_VOC.push(d.voc); }
+  // 총평
+  if(d.rv.잘된점){ RT_REVIEW=RT_REVIEW.filter(r=>r.운영ID!==op.id); RT_REVIEW.push(d.rv); }
+  closeEditModal();
+  render();
+  if(state.selectedId===op.id) openDetail(op.id);
+  showToast('저장되었습니다.','success');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   엑셀 가져오기
+═══════════════════════════════════════════════════════════════════ */
+let excelParsed=[];
+
+function openExcelModal(){
+  excelParsed=[];
+  document.getElementById('excelDropArea').style.display='';
+  document.getElementById('excelPreviewArea').style.display='none';
+  document.getElementById('btnExcelApply').style.display='none';
+  document.getElementById('excelFileInfo').textContent='파일을 선택해주세요';
+  document.getElementById('excelFileInput').value='';
+  document.getElementById('excelModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeExcelModal(){
+  document.getElementById('excelModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function handleExcelFile(file){
+  document.getElementById('excelFileInfo').textContent=`${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){
+    const reader=new FileReader();
+    reader.onload=e=>parseCSV(e.target.result);
+    reader.readAsText(file,'UTF-8');
+  } else {
+    // xlsx: SheetJS 없이 구조 안내만 제공
+    showExcelStructureGuide(file.name);
+  }
+}
+
+function parseCSV(text){
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2){ showToast('데이터가 비어있습니다.','error'); return; }
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  const rows=lines.slice(1).map(line=>{
+    const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    const obj={};
+    headers.forEach((h,i)=>{ obj[h]=cols[i]||''; });
+    return obj;
+  }).filter(r=>r['운영ID']&&r['단체명']);
+  excelParsed=rows;
+  showExcelPreview(rows,headers);
+}
+
+function showExcelPreview(rows,headers){
+  const previewCols=['운영ID','사업분류','세부유형','단체명','지역','운영형태','운영시작일','전체참가인원'];
+  const show=previewCols.filter(h=>headers.includes(h));
+  const pa=document.getElementById('excelPreviewArea');
+  pa.style.display='';
+  document.getElementById('excelDropArea').style.display='none';
+  pa.innerHTML=`
+    <div class="excel-status">✅ ${rows.length}건의 데이터를 읽었습니다. 미리보기를 확인하고 적용하세요.</div>
+    <div class="excel-preview-wrap">
+      <table class="excel-preview-table">
+        <thead><tr>${show.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.slice(0,20).map(r=>`<tr>${show.map(h=>`<td>${r[h]||''}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+    ${rows.length>20?`<div style="font-size:11px;color:var(--gray400);margin-top:6px;text-align:center">처음 20건만 표시됩니다. 전체 ${rows.length}건 적용 예정.</div>`:''}`;
+  document.getElementById('btnExcelApply').style.display='';
+}
+
+function showExcelStructureGuide(name){
+  const pa=document.getElementById('excelPreviewArea');
+  pa.style.display='';
+  document.getElementById('excelDropArea').style.display='none';
+  pa.innerHTML=`
+    <div style="padding:20px;background:var(--orange-lt);border-radius:var(--radius);margin-bottom:16px">
+      <div style="font-weight:700;color:var(--orange);margin-bottom:8px">⚠️ xlsx 직접 파싱 안내</div>
+      <div style="font-size:13px;color:var(--gray700);line-height:1.7">
+        브라우저 보안 정책상 xlsx 파일은 <strong>SheetJS 라이브러리</strong> 없이 직접 파싱이 어렵습니다.<br>
+        아래 두 가지 방법을 사용하세요:<br>
+        <strong>방법 1.</strong> 엑셀에서 '다른 이름으로 저장' → <strong>CSV(UTF-8)</strong>로 저장 후 가져오기<br>
+        <strong>방법 2.</strong> 실제 서버 연동 시 SheetJS(xlsx.js) 라이브러리를 추가하면 .xlsx 직접 파싱 가능
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray600)">
+      <strong>CSV 컬럼 순서 (운영아카이브 시트 기준):</strong><br>
+      운영ID, 사업분류, 세부유형, 세부사업명, 단체명, 지역, 대상구분, 운영형태, 운영시작일, 운영종료일, 운영일수, 숙박일수, 기준프로그램수, 전체참가인원, ...
+    </div>`;
+  document.getElementById('excelFileInfo').textContent=`${name} — CSV 변환 필요`;
+}
+
+function applyExcelData(){
+  if(!excelParsed.length){ showToast('적용할 데이터가 없습니다.','error'); return; }
+  let added=0,updated=0;
+  excelParsed.forEach(row=>{
+    const id=row['운영ID'];
+    if(!id) return;
+    const existing=RT_OPS.findIndex(o=>o.id===id);
+    const op={
+      id,
+      사업분류:row['사업분류']||'',
+      세부유형:row['세부유형']||'',
+      세부사업명:row['세부사업명']||'',
+      단체명:row['단체명']||'',
+      지역:row['지역']||'',
+      대상구분:row['대상구분']||'',
+      운영형태:row['운영형태']||'',
+      운영시작일:row['운영시작일']||'',
+      운영종료일:row['운영종료일']||'',
+      운영일수:parseInt(row['운영일수'])||1,
+      숙박일수:parseInt(row['숙박일수'])||0,
+      기준프로그램수:parseInt(row['기준프로그램수'])||3,
+      인원:calcPeople({인솔교사:parseInt(row['인솔교사 인원'])||0,보호자:parseInt(row['보호자 인원'])||0,성인:parseInt(row['성인 인원'])||0}),
+      만족도입력:'미입력',효과성입력:'미입력',결과보고:'미작성',아카이브:'진행중'
+    };
+    op.인원.전체=parseInt(row['전체참가인원'])||parseInt(row['전체 참가인원'])||op.인원.전체;
+    if(existing>=0){ RT_OPS[existing]=op; updated++; }
+    else { RT_OPS.push(op); added++; }
+  });
+  closeExcelModal();
+  render();
+  showToast(`${added}건 추가, ${updated}건 업데이트 완료`,'success');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AI 분석 — 필터·카드·결과카드·자연어질의
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── 필터 헬퍼 ── */
+function getAiFilter(){
+  return {
+    year: document.getElementById('afYear')?.value||'',
+    cat:  document.getElementById('afCat')?.value||'',
+    sub:  document.getElementById('afSub')?.value||'',
+    form: document.getElementById('afForm')?.value||'',
+    tgt:  document.getElementById('afTarget')?.value||'',
+    org:  document.getElementById('afOrg')?.value.trim()||''
+  };
+}
+function aiFilteredOps(){
+  const f=getAiFilter();
+  return RT_OPS.filter(o=>{
+    if(f.cat && o.사업분류!==f.cat) return false;
+    if(f.sub && o.세부유형!==f.sub) return false;
+    if(f.form && o.운영형태!==f.form) return false;
+    if(f.tgt && o.대상구분!==f.tgt) return false;
+    if(f.org && !normOrgName(o.단체명).includes(normOrgName(f.org))) return false;
+    return true;
+  });
+}
+function buildSubtypeFilter(cat){
+  const sel=document.getElementById('afSub');
+  sel.innerHTML='<option value="">세부유형 전체</option>';
+  (SUBTYPES[cat]||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+}
+function updateAiFilterScope(){
+  const ops=aiFilteredOps();
+  const svs=ops.map(o=>rtSurvey(o.id)).filter(Boolean);
+  const avg=svs.length?(svs.reduce((a,v)=>a+v.만족도점수,0)/svs.length).toFixed(1):'-';
+  const el=document.getElementById('aiFilterScope');
+  if(el) el.textContent=`${ops.length}건 분석 중 · 평균 만족도 ${avg}점`;
+}
+
+/* ── 프로그램별 보정 만족도 (데모 차별화) ── */
+const PROG_SCORE_ADJUST={
+  '천체투영관':+3.2, '폼로켓':+2.1, '착륙선':+1.4,
+  '장비체험':+0.6, '종이비행기':-0.4, '회물공':-1.2,
+  '0과 1로 전하는 우주의 메시지':+1.8
+};
+
+function getProgScore(progName, baseScore){
+  const adj=PROG_SCORE_ADJUST[progName]||0;
+  return Math.min(100, Math.max(0, baseScore+adj));
+}
+
+/* ── 페이지 진입 ── */
+function renderAIPage(){
+  document.getElementById('aiResultCard').classList.remove('visible');
+  document.getElementById('aiParseHint').style.display='none';
+  renderAiItemBtns();
+  updateAiFilterScope();
+  setTimeout(()=>{ buildAICards(); },80);
+}
+
+function renderAiItemBtns(activeId){
+  const el=document.getElementById('aiItemBtns');
+  el.innerHTML=ANALYSIS_ITEMS.map(it=>`
+    <button class="ai-item-btn ${activeId===it.id?'active':''}" data-item="${it.id}">${it.icon} ${it.label}</button>`).join('');
+}
+
+/* ── 카드 빌드 ── */
+function buildAICards(){
+  const grid=document.getElementById('aiGrid');
+  grid.innerHTML='';
+  const ops=aiFilteredOps();
+  if(!ops.length){
+    grid.innerHTML='<div class="no-data" style="grid-column:1/-1">선택한 필터 조건에 맞는 운영 건이 없습니다.</div>';
+    return;
+  }
+  grid.appendChild(cardSatisfactionByCategory(ops));
+  grid.appendChild(cardVOCFrequency(ops));
+  grid.appendChild(cardProgramRanking(ops));
+  grid.appendChild(cardFormComparison(ops));
+  grid.appendChild(cardInsights(ops));
+  grid.appendChild(cardOperationDifficulty(ops));
+}
+
+function makeCard(title,icon,content){
+  const card=document.createElement('div');
+  card.className='ai-card';
+  card.innerHTML=`<div class="ai-card-title"><span class="icon">${icon}</span>${title}</div>${content}`;
+  return card;
+}
+
+function cardSatisfactionByCategory(ops){
+  const cats=['취약','학단','특성화','공교육'];
+  const colors=['#7c3aed','#2563eb','#0891b2','#16a34a'];
+  const items=cats.map((cat,ci)=>{
+    const sub=ops.filter(o=>o.사업분류===cat);
+    const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+    const avg=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+    const eff=svs.length?(svs.reduce((s,v)=>s+v.효과성점수,0)/svs.length).toFixed(1):'-';
+    return {cat,avg,eff,color:colors[ci],cnt:sub.length};
+  }).filter(i=>i.cnt>0);
+  if(!items.length) return makeCard('사업별 평균 만족도','📊','<div class="no-data">데이터 없음</div>');
+  const maxVal=Math.max(...items.map(i=>parseFloat(i.avg)||0),1);
+  const bars=items.map(i=>`
+    <div class="chart-bar-item">
+      <div class="chart-bar-label">${i.cat} (${i.cnt}건)</div>
+      <div class="chart-bar-track">
+        <div class="chart-bar-fill" style="width:${((parseFloat(i.avg)||0)/maxVal*100).toFixed(1)}%;background:${i.color}">
+          ${parseFloat(i.avg)>=60?i.avg:''}
+        </div>
+      </div>
+      <div class="chart-bar-val">${i.avg}</div>
+    </div>`).join('');
+  return makeCard('사업별 평균 만족도','📊',`<div class="chart-bar-group">${bars}</div>
+    <div style="font-size:11px;color:var(--gray400);margin-top:10px">효과성: ${items.map(i=>`${i.cat} ${i.eff}`).join(' · ')}</div>`);
+}
+
+function cardVOCFrequency(ops){
+  const ids=new Set(ops.map(o=>o.id));
+  const freq={};
+  RT_VOC.filter(v=>ids.has(v.운영ID)).forEach(v=>{ freq[v.이슈유형]=(freq[v.이슈유형]||0)+1; });
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length) return makeCard('VOC 이슈 유형 빈도','🔍','<div class="no-data">분석 가능한 데이터가 부족합니다</div>');
+  const total=sorted.reduce((s,[,n])=>s+n,0);
+  const items=sorted.map(([k,n])=>`
+    <div class="voc-kw-item">
+      <span class="voc-kw-count">${n}건</span>
+      <span class="voc-kw-text">${k}</span>
+      <span style="font-size:11px;color:var(--gray400)">${((n/total)*100).toFixed(0)}%</span>
+    </div>`).join('');
+  return makeCard('VOC 이슈 유형 빈도','🔍',`<div class="voc-keyword-list">${items}</div>`);
+}
+
+function cardProgramRanking(ops){
+  const ids=new Set(ops.map(o=>o.id));
+  const progMap={};
+  RT_PROGS.filter(p=>ids.has(p.운영ID)).forEach(p=>{
+    const sv=rtSurvey(p.운영ID); if(!sv) return;
+    const adj=getProgScore(p.프로그램명, sv.만족도점수);
+    if(!progMap[p.프로그램명]) progMap[p.프로그램명]={total:0,cnt:0};
+    progMap[p.프로그램명].total+=adj;
+    progMap[p.프로그램명].cnt+=1;
+  });
+  const ranked=Object.entries(progMap)
+    .map(([name,d])=>({name,avg:(d.total/d.cnt).toFixed(1),cnt:d.cnt}))
+    .sort((a,b)=>parseFloat(b.avg)-parseFloat(a.avg)).slice(0,7);
+  if(!ranked.length) return makeCard('프로그램별 만족도 순위','⭐','<div class="no-data">분석 가능한 데이터가 부족합니다</div>');
+  const items=ranked.map((p,i)=>`
+    <div class="prog-rank-item">
+      <div class="prog-rank-num">${i+1}</div>
+      <div class="prog-rank-name">${p.name}<span style="font-size:10px;color:var(--gray400);margin-left:4px">(${p.cnt}회)</span></div>
+      <div class="prog-rank-score">${p.avg}</div>
+    </div>`).join('');
+  return makeCard('프로그램별 만족도 순위','⭐',`<div class="prog-rank-list">${items}</div>
+    <div style="font-size:10px;color:var(--gray400);margin-top:8px">※ 프로그램 참여 운영 건 만족도 기반 (보정 적용)</div>`);
+}
+
+function cardFormComparison(ops){
+  const forms=['2박3일','1박2일','당일체험','온라인'];
+  const rows=forms.map(f=>{
+    const sub=ops.filter(o=>o.운영형태===f); if(!sub.length) return null;
+    const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+    const avgSat=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+    const avgEff=svs.length?(svs.reduce((s,v)=>s+v.효과성점수,0)/svs.length).toFixed(1):'-';
+    return {f,cnt:sub.length,avgSat,avgEff,tp:sub.reduce((s,o)=>s+(o.인원.전체||0),0)};
+  }).filter(Boolean);
+  if(!rows.length) return makeCard('운영형태별 성과 비교','📋','<div class="no-data">분석 가능한 데이터가 부족합니다</div>');
+  const maxSat=Math.max(...rows.map(r=>parseFloat(r.avgSat)||0));
+  const tableRows=rows.map(r=>`<tr>
+    <td><span class="badge ${FORM_BADGE[r.f]||'badge-gray'}">${r.f}</span></td>
+    <td>${r.cnt}건</td>
+    <td class="${parseFloat(r.avgSat)===maxSat?'best':''}">${r.avgSat}</td>
+    <td>${r.avgEff}</td>
+    <td>${r.tp.toLocaleString()}명</td>
+  </tr>`).join('');
+  return makeCard('운영형태별 성과 비교','📋',`
+    <table class="compare-table">
+      <thead><tr><th>운영형태</th><th>건수</th><th>만족도</th><th>효과성</th><th>참여인원</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>`);
+}
+
+function cardInsights(ops){
+  const svs=ops.map(o=>rtSurvey(o.id)).filter(Boolean);
+  const avgAll=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+  const topSv=[...svs].sort((a,b)=>b.만족도점수-a.만족도점수)[0];
+  const topOp=topSv?RT_OPS.find(o=>o.id===topSv.운영ID):null;
+  const improveCnt=svs.filter(s=>s.만족도의견성격==='개선'||s.효과성의견성격==='개선').length;
+  const totalPeople=ops.reduce((s,o)=>s+(o.인원.전체||0),0);
+  // 이동시간 반복 카운트
+  const ids=new Set(ops.map(o=>o.id));
+  const moveKw=['이동시간','이동 동선','이동시간과'];
+  const moveCnt=RT_REVIEW.filter(r=>ids.has(r.운영ID)&&moveKw.some(k=>r.다음개선사항?.includes(k)||r.운영상어려움?.includes(k))).length;
+  const 초등ops=ops.filter(o=>o.대상구분==='초등');
+  const 고학년ops=ops.filter(o=>o.대상구분==='중등'||o.대상구분==='고등');
+  const 초svs=초등ops.map(o=>rtSurvey(o.id)).filter(Boolean);
+  const 고svs=고학년ops.map(o=>rtSurvey(o.id)).filter(Boolean);
+  const diff초고=초svs.length&&고svs.length?(
+    ((초svs.reduce((s,v)=>s+v.만족도점수,0)/초svs.length)-(고svs.reduce((s,v)=>s+v.만족도점수,0)/고svs.length)).toFixed(1)
+  ):null;
+  const items=[
+    {cls:'good',text:`2026년 현재 평균 만족도 <strong>${avgAll}점</strong>으로 전반적으로 높은 수준입니다.`},
+    {cls:'good',text:`누적 참여인원 <strong>${totalPeople.toLocaleString()}명</strong> · ${ops.length}개 운영 건 기준`},
+    topOp?{cls:'good',text:`최고 만족도: <strong>${topOp.단체명}</strong> (${topSv.만족도점수}점)`}:null,
+    moveCnt>0?{cls:'warn',text:`2박3일 운영 중 <strong>${moveCnt}건</strong>에서 이동시간·일정 관련 VOC가 반복되고 있습니다.`}:null,
+    diff초고!==null?{cls:'',text:`초등 대상 만족도가 중·고등 대비 <strong>${Math.abs(parseFloat(diff초고))}점 ${parseFloat(diff초고)>0?'높게':'낮게'}</strong> 나타납니다.`}:null,
+    {cls:'warn',text:`최근 운영총평에서 <strong>'이동시간 확보'</strong>가 반복적으로 개선사항으로 기록되었습니다.`},
+    {cls:'',text:`개선 의견 포함 운영 건 <strong>${improveCnt}건</strong> — 차기 운영 시 참고 필요`},
+  ].filter(Boolean);
+  return makeCard('전체 운영 인사이트','💡',`<div class="insight-list">${items.map(i=>`
+    <div class="insight-item ${i.cls}">${i.text}</div>`).join('')}</div>`);
+}
+
+function cardOperationDifficulty(ops){
+  const ids=new Set(ops.map(o=>o.id));
+  const keywords=['이동시간','프로그램 간','대기','촉박','재료','접속','안내','시간 관리','소음','배식'];
+  const freq={};
+  const opMap={};
+  RT_REVIEW.filter(r=>ids.has(r.운영ID)).forEach(r=>{
+    keywords.forEach(kw=>{
+      if(r.운영상어려움?.includes(kw)||r.다음개선사항?.includes(kw)){
+        freq[kw]=(freq[kw]||0)+1;
+        if(!opMap[kw]) opMap[kw]=[];
+        opMap[kw].push(r.운영ID);
+      }
+    });
+  });
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(!sorted.length) return makeCard('반복 운영 어려움 키워드','⚠️','<div class="no-data">분석 가능한 데이터가 부족합니다</div>');
+  const items=sorted.map(([kw,n])=>`
+    <div class="voc-kw-item">
+      <span class="voc-kw-count">${n}건</span>
+      <span class="voc-kw-text">${kw}</span>
+    </div>`).join('');
+  return makeCard('반복 운영 어려움 키워드','⚠️',`<div class="voc-keyword-list">${items}</div>
+    <div style="font-size:10px;color:var(--gray400);margin-top:8px">※ 운영총평 텍스트 분석 기준</div>`);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AI 업무분석 — 분석항목 선택 + 조건 필터 방식
+   ※ 자유 자연어 질문의 임의 해석을 피하기 위해, 입력값에서
+     "분석 항목 + 조건"만 인식한다. 인식 실패/복수 인식 시
+     AI가 임의로 하나를 고르지 않고 사용자에게 선택하도록 안내한다.
+     숫자 집계는 항상 정해진 코드 로직(analyzeXXX 함수)이 계산하고,
+     AI(문구)는 그 결과를 서술하는 데만 사용한다.
+═══════════════════════════════════════════════════════════════════ */
+
+// 6개 기본 분석 항목
+const ANALYSIS_ITEMS=[
+  {id:'만족도',   label:'만족도',   icon:'⭐'},
+  {id:'VOC',      label:'VOC',      icon:'🔍'},
+  {id:'운영이슈', label:'운영이슈', icon:'⚠️'},
+  {id:'재방문',   label:'재방문',   icon:'🔁'},
+  {id:'실적목표', label:'실적목표', icon:'🎯'},
+  {id:'사업성과', label:'사업성과', icon:'📊'}
+];
+
+// 제한적 동의어 매핑 — 여기 등록된 단어만 해당 분석항목으로 인식한다 (fuzzy matching 없음)
+const SYNONYM_MAP={
+  '만족도': ['만족','만족도','설문'],
+  'VOC': ['voc','VOC','의견','요구사항'],
+  '운영이슈': ['주의사항','문제','운영문제','운영이슈'],
+  '재방문': ['재방문','재참여','다시방문'],
+  '실적목표': ['목표','달성률','실적목표','참여인원','인원','수입','매출'],
+  '사업성과': ['성과','사업성과','운영성과']
+};
+
+// 조건 필터에서 인식 가능한 값(현재 데이터에 실제 존재하는 값 범위로 제한)
+const AI_COND_YEARS=['2026'];
+const AI_COND_CATS=Object.keys(SUBTYPES); // 취약/학단/특성화/공교육
+const AI_COND_FORMS=['2박3일','1박2일','당일체험','온라인'];
+const AI_COND_TARGETS=['초등','중등','고등','혼합','가족캠프','교원'];
+
+// 입력 문자열에서 "분석 항목 + 조건"을 인식한다.
+// 반환: { matchedItems:[항목id...], year, cat, sub, form, tgt, org }
+function parseAiInput(text){
+  const q=(text||'').trim();
+  const matchedItems=[];
+  Object.entries(SYNONYM_MAP).forEach(([itemId,words])=>{
+    if(words.some(w=>q.toLowerCase().includes(w.toLowerCase()))) matchedItems.push(itemId);
+  });
+
+  const found={year:'',cat:'',sub:'',form:'',tgt:'',org:''};
+  AI_COND_YEARS.forEach(y=>{ if(q.includes(y)) found.year=y; });
+  AI_COND_CATS.forEach(c=>{ if(q.includes(c)) found.cat=c; });
+  AI_COND_FORMS.forEach(f=>{ if(q.includes(f)) found.form=f; });
+  AI_COND_TARGETS.forEach(t=>{ if(q.includes(t)) found.tgt=t; });
+  // 세부유형은 선택된(또는 발견된) 사업분류 범위 안에서만 탐색 (다른 사업의 동명 세부유형과 혼동 방지)
+  if(found.cat){
+    (SUBTYPES[found.cat]||[]).forEach(s=>{ if(q.includes(s)) found.sub=s; });
+  }
+  // 기관명: 실제 단체명 문자열이 입력에 포함되어 있는지 확인 (완전일치 부분포함, fuzzy 아님)
+  const allOrgNames=[...new Set(RT_OPS.map(o=>o.단체명))];
+  const orgHit=allOrgNames.find(name=>q.includes(normOrgName(name).replace(/\(가상\)$/,'')) );
+  if(orgHit) found.org=orgHit;
+
+  return {matchedItems,...found};
+}
+
+/* ── AI 업무분석 항목별 분석 함수 (숫자 계산은 여기서만, 정해진 로직) ── */
+
+// ① 만족도 — DB_SURVEY 기반. 프로그램별 만족도 데이터가 없으므로 운영 건 단위로만 집계.
+function analyzeSatisfaction(ops){
+  const svs=ops.map(o=>({op:o,sv:rtSurvey(o.id)})).filter(x=>x.sv);
+  if(!svs.length) return null;
+  const avgSat=(svs.reduce((s,x)=>s+x.sv.만족도점수,0)/svs.length).toFixed(1);
+  const avgEff=(svs.reduce((s,x)=>s+x.sv.효과성점수,0)/svs.length).toFixed(1);
+  const sorted=[...svs].sort((a,b)=>b.sv.만족도점수-a.sv.만족도점수);
+  const top=sorted.slice(0,3);
+  const bottom=sorted.slice(-3).reverse();
+  return {
+    core:`분석 대상 ${ops.length}건 중 만족도 응답이 있는 ${svs.length}건을 집계했습니다. 평균 만족도 ${avgSat}점, 평균 효과성 ${avgEff}점입니다. (프로그램별 만족도 데이터는 없어 운영 건 단위로만 집계했습니다.)`,
+    evidence:top.map(x=>({text:`${x.op.단체명} (${x.op.id})`,count:`만족도 ${x.sv.만족도점수}점`,opIds:[x.op.id]})),
+    patterns:[
+      `가장 만족도가 높은 운영: ${top.map(x=>`${x.op.단체명} ${x.sv.만족도점수}점`).join(', ')}`,
+      `가장 만족도가 낮은 운영: ${bottom.map(x=>`${x.op.단체명} ${x.sv.만족도점수}점`).join(', ')}`
+    ],
+    suggests:[],
+    refOps:sorted.slice(0,6).map(x=>x.op.id)
+  };
+}
+
+// ② VOC — DB_VOC 기반. 실제 기록된 이슈유형/세부내용만 집계·요약한다 (없는 의견 생성 금지).
+function analyzeVOC(ops){
+  const ids=new Set(ops.map(o=>o.id));
+  const vocs=RT_VOC.filter(v=>ids.has(v.운영ID));
+  if(!vocs.length) return null;
+  const freq={};const opRef={};
+  vocs.forEach(v=>{
+    freq[v.이슈유형]=(freq[v.이슈유형]||0)+v.발생건수;
+    if(!opRef[v.이슈유형]) opRef[v.이슈유형]=[];
+    opRef[v.이슈유형].push(v.운영ID);
+  });
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  const total=sorted.reduce((s,[,n])=>s+n,0);
+  const relOps=[...new Set(Object.values(opRef).flat())].slice(0,6);
+  return {
+    core:`분석 대상 ${ops.length}건에서 기록된 VOC ${vocs.length}건(발생건수 합계 ${total}건)을 집계했습니다. "${sorted[0][0]}" 유형이 ${sorted[0][1]}건으로 가장 많습니다.`,
+    evidence:sorted.slice(0,6).map(([k,n])=>({text:k,count:`${n}건 (${((n/total)*100).toFixed(0)}%)`,opIds:opRef[k]||[]})),
+    patterns:vocs.slice(0,4).map(v=>`[${v.이슈유형}] ${v.세부내용}`),
+    suggests:[],
+    refOps:relOps
+  };
+}
+
+// ③ 운영이슈 — VOC + 운영총평(REVIEW)의 실제 텍스트에서 확인되는 반복 항목만 집계. 원인은 추론하지 않음.
+function analyzeOpsIssue(ops){
+  const ids=new Set(ops.map(o=>o.id));
+  const rvs=RT_REVIEW.filter(r=>ids.has(r.운영ID));
+  const vocs=RT_VOC.filter(v=>ids.has(v.운영ID));
+  if(!rvs.length && !vocs.length) return null;
+  const diffTexts=[...new Set(rvs.map(r=>r.운영상어려움).filter(Boolean))];
+  const nextTexts=[...new Set(rvs.map(r=>r.다음개선사항).filter(Boolean))];
+  const vocOpen=vocs.filter(v=>v.상태==='차기반영');
+  return {
+    core:`분석 대상 ${ops.length}건 중 운영총평 ${rvs.length}건, VOC ${vocs.length}건(그중 "차기반영" 상태 ${vocOpen.length}건)을 확인했습니다. 아래는 실제 기록된 텍스트이며, 원인은 별도로 추론하지 않았습니다.`,
+    evidence:rvs.slice(0,5).map(r=>({text:`${r.운영ID} 운영상 어려움`,count:'기록됨',opIds:[r.운영ID]})),
+    patterns:diffTexts.slice(0,5),
+    suggests:nextTexts.slice(0,5),
+    refOps:rvs.map(r=>r.운영ID).slice(0,6)
+  };
+}
+
+// ⑤ 실적목표 — 대시보드의 목표 달성 현황(getPeopleTarget/getPeopleActual/getRevenueRecord/
+//    calcAchievement)과 동일한 함수·동일한 값을 그대로 사용한다. AI가 별도로 숫자를
+//    다시 계산하지 않고, 코드가 이미 계산한 결과를 문장으로 설명만 한다.
+//    참여인원 목표·수입 목표/실적은 DEMO(가상) 데이터이며, 참여인원 현재실적만
+//    실제 샘플 운영데이터(RT_OPS) 집계값이다 — 두 출처를 문장에서 구분해 표기한다.
+function analyzeTargetPerformance(ops){
+  const year='2026';
+  // 화면에서 선택된 필터(사업분류)가 있으면 그 범위로, 없으면(=전체) '전체' 기준으로 본다.
+  const f=getAiFilter();
+  const cat=f.cat||'전체';
+
+  const peopleTarget=getPeopleTarget(year,cat);
+  const peopleActual=getPeopleActual(year,cat==='전체'?'':cat);
+  const people=calcAchievement(peopleTarget,peopleActual);
+
+  const rev=getRevenueRecord(year,cat);
+  const revenue=rev ? calcAchievement(rev.수입목표,rev.현재수입) : null;
+
+  if(!peopleTarget && !rev){
+    return {
+      core:`"${cat}" 기준의 목표 데이터(DEMO)가 등록되어 있지 않아 목표 대비 달성률을 계산할 수 없습니다. 현재 DEMO 목표는 "전체" 기준으로만 등록되어 있습니다.`,
+      evidence:[], patterns:[], suggests:['사업분류별 목표값이 필요하면 대시보드의 "목표값 수정"에서 추가로 등록할 수 있는 구조로 확장이 필요합니다.'], refOps:[]
+    };
+  }
+
+  const fmtWon=(n)=>`${(n/10000).toLocaleString()}만원`;
+  const evidence=[
+    {text:'참여인원 목표 (DEMO)',count:`${people.target.toLocaleString()}명`,opIds:[]},
+    {text:'참여인원 현재실적 (샘플 운영데이터 집계)',count:`${people.actual.toLocaleString()}명`,opIds:ops.slice(0,4).map(o=>o.id)},
+    {text:'참여인원 달성률',count:`${people.rate}%`,opIds:[]}
+  ];
+  if(revenue){
+    evidence.push(
+      {text:'수입 목표 (DEMO)',count:fmtWon(revenue.target),opIds:[]},
+      {text:'수입 현재실적 (DEMO)',count:fmtWon(revenue.actual),opIds:[]},
+      {text:'수입 달성률',count:`${revenue.rate}%`,opIds:[]}
+    );
+  }
+
+  const peopleLine=`참여인원은 목표 ${people.target.toLocaleString()}명(DEMO) 대비 현재실적 ${people.actual.toLocaleString()}명(샘플 운영데이터 집계)으로 ${people.rate}% 달성했습니다. ${people.isOver?`목표를 ${people.remain.toLocaleString()}명 초과했습니다.`:`목표까지 ${people.remain.toLocaleString()}명이 남았습니다.`}`;
+  const revenueLine=revenue?` 수입은 목표 ${fmtWon(revenue.target)}(DEMO) 대비 현재실적 ${fmtWon(revenue.actual)}(DEMO)으로 ${revenue.rate}% 달성했으며, ${revenue.isOver?`목표를 ${fmtWon(revenue.remain)} 초과했습니다.`:`목표까지 ${fmtWon(revenue.remain)}이 남았습니다.`}`:' 수입 목표(DEMO) 데이터가 없어 수입 달성률은 표시하지 않았습니다.';
+
+  return {
+    core:`[${cat} 기준] ${peopleLine}${revenueLine}`,
+    evidence,
+    patterns:['참여인원 목표·수입 목표/실적은 발표용 DEMO(가상) 데이터이며, 참여인원 현재실적만 실제 샘플 운영데이터를 집계한 값입니다.'],
+    suggests:[],
+    refOps:ops.slice(0,6).map(o=>o.id)
+  };
+}
+
+// ⑥ 사업성과 — 사업분류별로 실제 존재하는 지표(운영건수/참여인원/만족도)만 비교. 없는 지표는 비교하지 않음.
+function analyzeBusinessPerformance(ops){
+  const cats=[...new Set(ops.map(o=>o.사업분류))];
+  const rows=cats.map(cat=>{
+    const sub=ops.filter(o=>o.사업분류===cat);
+    const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+    const people=sub.reduce((s,o)=>s+(o.인원.전체||0),0);
+    return {
+      cat, cnt:sub.length, people,
+      sat: svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):null,
+      ids: sub.map(o=>o.id)
+    };
+  });
+  if(!rows.length) return null;
+  const withSat=rows.filter(r=>r.sat!==null);
+  return {
+    core:`분석 대상 ${ops.length}건을 사업분류별로 비교했습니다. 운영 건수·참여인원은 전체 사업에서 확인 가능하며, 만족도는 설문이 등록된 ${withSat.length}/${rows.length}개 사업에서만 비교했습니다.`,
+    evidence:rows.map(r=>({text:`${r.cat} — 운영 ${r.cnt}건, 참여인원 ${r.people.toLocaleString()}명`,count:r.sat!==null?`만족도 ${r.sat}점`:'만족도 데이터 없음',opIds:r.ids.slice(0,3)})),
+    patterns:[],
+    suggests:[],
+    refOps:rows.flatMap(r=>r.ids).slice(0,6)
+  };
+}
+
+/* ── (구) AI 자연어 질의 엔진 ──────────────────────────────────────────
+   ⚠️ 자유 자연어 질문을 AI가 임의로 키워드 매칭하던 기존 방식입니다.
+   결과 일관성 문제로 위 "항목 선택 + 조건 필터" 방식(analyzeSatisfaction 등)으로
+   대체되어 이제 runAiQuery()에서 호출되지 않습니다. 기존 데이터/다른 기능에는
+   영향이 없어 삭제하지 않고 보존만 해두었습니다(참고용). ── */
+const AI_KB=[
+  {
+    keys:['반복','운영','어려움','어려운','어렵'],
+    analyze(q,ops){
+      const ids=new Set(ops.map(o=>o.id));
+      const kws={
+        '이동시간 부족':['이동시간','이동 동선'],
+        '일정 촉박':['촉박','일정'],
+        '안내 미흡':['안내','재안내'],
+        '대기시간 발생':['대기'],
+        '배식 혼잡':['배식'],
+        '숙박 소음':['소음']
+      };
+      const freq={};const opRef={};
+      RT_REVIEW.filter(r=>ids.has(r.운영ID)).forEach(r=>{
+        Object.entries(kws).forEach(([label,keys])=>{
+          if(keys.some(k=>(r.운영상어려움||'').includes(k)||(r.다음개선사항||'').includes(k))){
+            freq[label]=(freq[label]||0)+1;
+            if(!opRef[label]) opRef[label]=[];
+            opRef[label].push(r.운영ID);
+          }
+        });
+      });
+      const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+      if(!top.length) return null;
+      const relOps=[...new Set(Object.values(opRef).flat())].slice(0,6);
+      return {
+        core:`${ops.length}건의 운영총평을 분석한 결과, 반복적으로 나타나는 운영상 어려움 ${top.length}가지를 발견했습니다. 특히 이동시간 부족과 일정 촉박 문제가 가장 많이 언급됩니다.`,
+        evidence:top.slice(0,4).map(([k,n])=>({text:k,count:`${n}건`,opIds:opRef[k]||[]})),
+        patterns:[
+          '2박3일 운영에서 프로그램 이동·전환 시간 부족이 반복 확인됩니다.',
+          '사전 안내(준비물·접속링크) 미흡으로 인한 문의가 여러 건에서 발생합니다.',
+          '대규모 단체일수록 발사 대기·배식 혼잡이 심화되는 패턴이 있습니다.'
+        ],
+        suggests:[
+          '이동 완충시간 최소 15~20분 확보 — 일정표에 사전 반영',
+          'D-1 최종 안내문에 준비물·접속정보를 한 페이지로 요약 제공',
+          '발사 조 편성 기준(인원별)을 사전에 마련하여 대기시간 최소화'
+        ],
+        refOps:relOps
+      };
+    }
+  },
+  {
+    keys:['초등','만족','높은','프로그램','인기'],
+    analyze(q,ops){
+      const 초등ops=ops.filter(o=>o.대상구분==='초등'||o.대상구분==='혼합');
+      const ids=new Set(초등ops.map(o=>o.id));
+      const progMap={};
+      RT_PROGS.filter(p=>ids.has(p.운영ID)).forEach(p=>{
+        const sv=rtSurvey(p.운영ID); if(!sv) return;
+        const sc=getProgScore(p.프로그램명,sv.만족도점수);
+        if(!progMap[p.프로그램명]) progMap[p.프로그램명]={total:0,cnt:0,ops:[]};
+        progMap[p.프로그램명].total+=sc; progMap[p.프로그램명].cnt+=1;
+        progMap[p.프로그램명].ops.push(p.운영ID);
+      });
+      const ranked=Object.entries(progMap).map(([n,d])=>({n,avg:(d.total/d.cnt).toFixed(1),cnt:d.cnt,ops:d.ops}))
+        .sort((a,b)=>parseFloat(b.avg)-parseFloat(a.avg));
+      if(!ranked.length) return null;
+      const svs=초등ops.map(o=>rtSurvey(o.id)).filter(Boolean);
+      const avg=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+      const relOps=[...new Set(ranked.slice(0,3).flatMap(r=>r.ops))].slice(0,5);
+      return {
+        core:`초등·혼합 대상 운영 ${초등ops.length}건, 평균 만족도 ${avg}점. 프로그램별 분석에서 천체투영관·폼로켓·착륙선 순으로 높은 만족도가 나타납니다.`,
+        evidence:ranked.slice(0,4).map(r=>({text:`${r.n} — 운영 ${r.cnt}회`,count:`${r.avg}점`,opIds:r.ops.slice(0,3)})),
+        patterns:[
+          '체험·제작형 프로그램(폼로켓, 착륙선)이 관람형 대비 만족도가 높습니다.',
+          '"직접 만들어 발사"하는 활동에서 집중도와 참여도가 가장 높게 나타납니다.',
+          '천체투영관은 시각 자료·해설 병행 시 기억 지속도 의견이 많습니다.'
+        ],
+        suggests:[
+          '초등 저학년(1~3학년)은 체험 중심 2종, 고학년(4~6학년)은 원리 이해 병행 구성 권장',
+          '폼로켓 발사 전 간단한 물리 원리 설명 5분 추가 시 효과성 향상 기대',
+          '천체투영관은 해설 속도·난이도를 학년별로 조정할 수 있도록 안내문 준비'
+        ],
+        refOps:relOps
+      };
+    }
+  },
+  {
+    keys:['사업별','비교','만족도','효과성','성과'],
+    analyze(q,ops){
+      const cats=['취약','학단','특성화','공교육'];
+      const rows=cats.map(cat=>{
+        const sub=ops.filter(o=>o.사업분류===cat);
+        const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+        if(!svs.length) return null;
+        return {cat,cnt:sub.length,sat:(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1),eff:(svs.reduce((s,v)=>s+v.효과성점수,0)/svs.length).toFixed(1),ids:sub.map(o=>o.id)};
+      }).filter(Boolean);
+      if(!rows.length) return null;
+      const best=rows.reduce((a,b)=>parseFloat(a.sat)>parseFloat(b.sat)?a:b);
+      const relOps=rows.flatMap(r=>r.ids).slice(0,6);
+      return {
+        core:`${ops.length}건 운영 데이터 기반 사업별 성과를 분석했습니다. ${best.cat} 사업이 만족도 ${best.sat}점으로 가장 높으며, 전체 평균은 ${(rows.reduce((s,r)=>s+parseFloat(r.sat),0)/rows.length).toFixed(1)}점입니다.`,
+        evidence:rows.map(r=>({text:`${r.cat} (${r.cnt}건)`,count:`만족도 ${r.sat}점`,opIds:r.ids.slice(0,3)})),
+        patterns:[
+          '특성화·학단 사업은 체험 프로그램 구성이 유사하나 대상 특성에 따라 만족도 차이가 있습니다.',
+          '취약계층 사업은 소규모 운영으로 응답률이 낮지만 효과성 점수가 상대적으로 높습니다.',
+          '공교육(교원연수)은 만족도보다 현장 적용 가능성 관련 의견이 주를 이룹니다.'
+        ],
+        suggests:[
+          '사업별 차이를 연간 운영계획 수립 시 프로그램 구성 조정에 반영',
+          '취약계층 사업의 설문 응답률 제고를 위한 현장 수거 방식 검토',
+          '교원연수는 수업 적용 자료 묶음 제공으로 효과성 향상 기대'
+        ],
+        refOps:relOps
+      };
+    }
+  },
+  {
+    keys:['둥근세상','주의','사항','다음'],
+    analyze(q,ops){
+      const sub=ops.filter(o=>o.세부유형==='둥근세상만들기');
+      if(!sub.length) return null;
+      const ids=new Set(sub.map(o=>o.id));
+      const rvs=RT_REVIEW.filter(r=>ids.has(r.운영ID));
+      const vocs=RT_VOC.filter(v=>ids.has(v.운영ID));
+      const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+      const avg=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+      return {
+        core:`둥근세상만들기 운영 ${sub.length}건 분석 결과, 평균 만족도 ${avg}점. 반복적인 운영상 어려움과 VOC 패턴을 확인했습니다.`,
+        evidence:[
+          ...vocs.slice(0,3).map(v=>({text:`[${v.이슈유형}] ${v.세부내용.slice(0,30)}…`,count:`${v.발생건수}건`,opIds:[v.운영ID]})),
+          ...rvs.slice(0,1).map(r=>({text:`운영 어려움: ${r.운영상어려움?.slice(0,30)}…`,count:'총평',opIds:[r.운영ID]}))
+        ].filter(Boolean),
+        patterns:[
+          ...[...new Set(rvs.map(r=>r.운영상어려움).filter(Boolean))].slice(0,2).map(d=>`• ${d}`),
+          'VOC 중 행정·안내 관련 문의가 반복 발생합니다.'
+        ],
+        suggests:[
+          ...[...new Set(rvs.map(r=>r.다음개선사항).filter(Boolean))].slice(0,2),
+          'D-1 최종 안내문에 준비물·이동경로 요약 추가'
+        ],
+        refOps:sub.map(o=>o.id)
+      };
+    }
+  },
+  {
+    keys:['VOC','이슈','분석','많이','자주'],
+    analyze(q,ops){
+      const ids=new Set(ops.map(o=>o.id));
+      const freq={};const opRef={};
+      RT_VOC.filter(v=>ids.has(v.운영ID)).forEach(v=>{
+        freq[v.이슈유형]=(freq[v.이슈유형]||0)+v.발생건수;
+        if(!opRef[v.이슈유형]) opRef[v.이슈유형]=[];
+        opRef[v.이슈유형].push(v.운영ID);
+      });
+      const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+      if(!sorted.length) return null;
+      const total=sorted.reduce((s,[,n])=>s+n,0);
+      const relOps=[...new Set(Object.values(opRef).flat())].slice(0,6);
+      return {
+        core:`분석 범위 ${ops.length}건에서 총 ${total}건의 VOC가 확인됩니다. ${sorted[0][0]} 관련 이슈가 ${sorted[0][1]}건으로 가장 많습니다.`,
+        evidence:sorted.slice(0,5).map(([k,n])=>({text:k,count:`${n}건 (${((n/total)*100).toFixed(0)}%)`,opIds:opRef[k]||[]})),
+        patterns:[
+          '행정·안내 이슈(준비물, 접속 링크)는 운영 전 D-1 단계에서 반복 발생합니다.',
+          '일정·이동 관련 이슈는 2박3일 대규모 단체에서 집중됩니다.',
+          '차기반영 상태가 조치완료보다 많아 구조적 개선이 필요합니다.'
+        ],
+        suggests:[
+          '이슈 유형별 대응 SOP(표준운영절차) 마련으로 반복 이슈 최소화',
+          '차기반영 VOC의 실제 반영 여부를 운영 전 체크리스트에 포함',
+          '온라인 운영은 접속정보 자동 재안내 시스템 도입 검토'
+        ],
+        refOps:relOps
+      };
+    }
+  },
+  {
+    keys:['대상별','프로그램','추천','초등','중등','고등'],
+    analyze(q,ops){
+      const tgtMap={초등:'초등',중등:'중등',고등:'고등',혼합:'혼합'};
+      const rows=Object.entries(tgtMap).map(([label,tgt])=>{
+        const sub=ops.filter(o=>o.대상구분===tgt);
+        const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+        if(!svs.length) return null;
+        const avg=(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1);
+        return {label,cnt:sub.length,avg,ids:sub.map(o=>o.id)};
+      }).filter(Boolean);
+      if(!rows.length) return null;
+      const relOps=rows.flatMap(r=>r.ids).slice(0,6);
+      return {
+        core:`대상별 만족도를 분석했습니다. 초등·혼합 대상에서 체험형 프로그램의 만족도가 높고, 중·고등에서는 원리 이해·진로 탐색 관련 효과성 의견이 많습니다.`,
+        evidence:rows.map(r=>({text:`${r.label} 대상 (${r.cnt}건)`,count:`평균 ${r.avg}점`,opIds:r.ids.slice(0,3)})),
+        patterns:[
+          '초등: 폼로켓·착륙선 등 제작·발사형 프로그램에서 집중도 최고',
+          '중등: 장비체험 + 천체투영관 조합에서 진로 관심 효과성 의견 다수',
+          '고등: 원리 이해 위주 구성, 대학 연계 진로 정보 추가 시 효과성↑'
+        ],
+        suggests:[
+          '초등 저학년 — 체험 중심 2종 구성, 설명 최소화',
+          '중등 — 장비체험 + 우주과학 원리 설명 10분 추가 권장',
+          '고등 — 진로 탐색 연계 콘텐츠(우주 관련 직업군 소개) 추가'
+        ],
+        refOps:relOps
+      };
+    }
+  },
+  {
+    keys:['가족캠프','가족','캠프'],
+    analyze(q,ops){
+      const sub=ops.filter(o=>o.세부유형==='가족캠프');
+      if(!sub.length) return null;
+      const ids=new Set(sub.map(o=>o.id));
+      const svs=sub.map(o=>rtSurvey(o.id)).filter(Boolean);
+      const rvs=RT_REVIEW.filter(r=>ids.has(r.운영ID));
+      const avg=svs.length?(svs.reduce((s,v)=>s+v.만족도점수,0)/svs.length).toFixed(1):'-';
+      const quotes=[...new Set(svs.map(s=>s.만족도주관식).filter(Boolean))];
+      return {
+        core:`가족캠프 운영 ${sub.length}건, 평균 만족도 ${avg}점. 아이와 보호자가 함께 체험하는 활동 구성에서 높은 호응이 확인됩니다.`,
+        evidence:[
+          {text:'가족 공동 체험 긍정 의견',count:`${svs.length}건`,opIds:sub.map(o=>o.id)},
+          ...rvs.slice(0,2).map(r=>({text:`특이사항: ${r.특이사항?.slice(0,25)}…`,count:'총평',opIds:[r.운영ID]}))
+        ].filter(Boolean),
+        patterns:[
+          '가족 구성원 간 활동 속도 차이로 일부 조 대기 발생 패턴이 반복됩니다.',
+          quotes[0]?`"${quotes[0]}" — 가족 공동 체험 가치 인식이 높습니다.`:'긍정 의견 다수',
+          '보호자 대상 별도 안내(프로그램 목적·원리 설명)가 만족도에 영향을 줍니다.'
+        ],
+        suggests:[
+          '가족 단위 좌석·조 편성으로 함께 활동 가능하도록 사전 조정',
+          '선택형 보조활동(대기 시 활용) 사전 준비로 속도 차이 해소',
+          '보호자용 1페이지 프로그램 안내문 제작'
+        ],
+        refOps:sub.map(o=>o.id)
+      };
+    }
+  }
+];
+
+// 분석 결과를 결과 카드 DOM에 채운다 (항목분석/자유질문 공통 렌더 — 숫자는 이미 analyzeXXX가 계산 완료한 상태)
+function renderAiResultCard(qLabel, result, scopeLabel, opsCount){
+  const card=document.getElementById('aiResultCard');
+  document.getElementById('arQ').textContent=qLabel;
+  document.getElementById('arMeta').textContent=`분석 범위: ${scopeLabel} · ${opsCount}건 · ${new Date().toLocaleDateString('ko-KR')}`;
+  document.getElementById('arCore').innerHTML=result.core;
+
+  document.getElementById('arEvidence').innerHTML=(result.evidence||[]).map(e=>`
+    <div class="ai-evidence-item">
+      <span class="ai-evidence-count">${e.count}</span>
+      <span class="ai-evidence-text">${e.text}</span>
+      ${e.opIds&&e.opIds.length?`<button class="btn-evidence" data-opids="${e.opIds.join(',')}" onclick="showEvidenceOps(this)">근거 보기</button>`:''}
+    </div>`).join('');
+
+  document.getElementById('arPattern').innerHTML=(result.patterns||[]).map(p=>`
+    <div class="ai-pattern-item">${p}</div>`).join('');
+
+  document.getElementById('arSuggest').innerHTML=(result.suggests||[]).map(s=>`
+    <div class="ai-suggest-item">✓ ${s}</div>`).join('');
+
+  const refPanel=document.getElementById('arOpsRef');
+  const refList=document.getElementById('arOpsList');
+  const refOps=(result.refOps||[]).map(id=>RT_OPS.find(o=>o.id===id)).filter(Boolean);
+  if(refOps.length){
+    refList.innerHTML=refOps.map(op=>`
+      <span class="ai-ops-ref-item" data-opid="${op.id}" onclick="jumpToOp('${op.id}')">${op.id}<br><span style="font-size:10px;font-weight:400">${op.단체명}</span></span>`).join('');
+    refPanel.style.display='';
+  } else { refPanel.style.display='none'; }
+
+  card.classList.add('visible');
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// 인식된 조건(연도/사업분류/세부유형/운영형태/대상/기관)을 실제 필터바 UI에 반영한다.
+function applyParsedConditionsToFilterUI(found){
+  if(found.cat){ document.getElementById('afCat').value=found.cat; buildSubtypeFilter(found.cat); }
+  if(found.sub) document.getElementById('afSub').value=found.sub;
+  if(found.form) document.getElementById('afForm').value=found.form;
+  if(found.tgt) document.getElementById('afTarget').value=found.tgt;
+  if(found.org) document.getElementById('afOrg').value=found.org;
+  updateAiFilterScope();
+  buildAICards();
+}
+
+function hideAiParseHint(){ document.getElementById('aiParseHint').style.display='none'; }
+function showAiParseHint(html){ const el=document.getElementById('aiParseHint'); el.innerHTML=html; el.style.display='flex'; }
+
+// 결과 카드가 없는 흐름(재방문 모달 등)에서도 "분석 기준"을 화면 상단에 작게 표시한다.
+// (경고/안내 문구가 아니라 현재 기준을 알려주는 용도이므로 같은 영역을 중립 텍스트로 재사용)
+function showAiCriteriaLabel(text){
+  showAiParseHint(`<span>📌 ${text}</span>`);
+}
+
+// 검색 입력창만 비운다 (분석 결과·필터·기관 필터 값은 건드리지 않는다)
+function clearAiQueryInput(){
+  document.getElementById('aiQueryInput').value='';
+}
+
+// 실제 적용된 조건(f)과 분석항목으로 "분석 기준: ..." 표시 문구를 만든다.
+// 예: "분석 기준: 푸른하늘고등학교 · 재방문", "분석 기준: 2026 · 취약 · 만족도"
+function buildAnalysisCriteriaLabel(itemId, f){
+  const label=ANALYSIS_ITEMS.find(i=>i.id===itemId);
+  const parts=[f.org, f.year, f.cat, f.sub, f.form, f.tgt].filter(Boolean);
+  parts.push(label?label.label:itemId);
+  return `분석 기준: ${parts.join(' · ')}`;
+}
+
+// 항목ID + (선택)조건으로 실제 분석을 실행한다. 항목 버튼 클릭과, 입력창에서 단일 인식된 경우 모두 여기로 모인다.
+// 반환값: 분석이 정상 실행되었는지 여부(true/false) — 호출부가 이 값으로 검색창 초기화 여부를 결정한다.
+function runAiAnalysisItem(itemId, found){
+  found=found||{};
+  hideAiParseHint();
+  renderAiItemBtns(itemId);
+  applyParsedConditionsToFilterUI(found);
+
+  // 재방문은 기존에 구현된 재방문 프로그램 추천 모달을 그대로 재사용한다 (숫자/근거 로직 중복 구현 금지)
+  if(itemId==='재방문'){
+    if(found.org){
+      const op=RT_OPS.find(o=>normOrgName(o.단체명)===normOrgName(found.org)) ||
+                RT_OPS.find(o=>normOrgName(o.단체명).includes(normOrgName(found.org)));
+      if(op){
+        document.getElementById('aiResultCard').classList.remove('visible');
+        showAiCriteriaLabel(`분석 기준: ${found.org} · 재방문`);
+        openRevisitModal(op.id);
+        return true; // 기관 특정 성공 → 정상 실행
+      }
+      // 입력에서 기관명을 인식했으나 실제 매칭되는 운영 건을 찾지 못한 경우(기관을 찾지 못한 경우) — 실행 실패로 처리
+      showToast(`"${found.org}"에 해당하는 운영 건을 찾지 못했습니다.`,'error');
+      return false;
+    }
+    document.getElementById('aiResultCard').classList.remove('visible');
+    showAiCriteriaLabel('분석 기준: 재방문 (기관을 검색해주세요)');
+    openRevisitModal(null); // 기관 미지정 시 검색 화면부터 시작 — 버튼 클릭 등 정상 흐름
+    return true;
+  }
+
+  const ops=aiFilteredOps();
+  const f=getAiFilter();
+  const scopeLabel=[f.org?`"${f.org}"`:'', f.cat||'전체',f.sub,f.form,f.tgt].filter(Boolean).join(' · ')||'전체';
+
+  if(!ops.length){ showToast('선택한 조건에 맞는 데이터가 없습니다.','error'); return false; }
+
+  const analyzers={
+    '만족도':analyzeSatisfaction,
+    'VOC':analyzeVOC,
+    '운영이슈':analyzeOpsIssue,
+    '실적목표':analyzeTargetPerformance,
+    '사업성과':analyzeBusinessPerformance
+  };
+  const result=analyzers[itemId] ? analyzers[itemId](ops) : null;
+
+  if(!result){
+    document.getElementById('aiResultCard').classList.remove('visible');
+    showToast('선택한 조건에서 분석할 데이터가 부족합니다.','error');
+    return false;
+  }
+  renderAiResultCard(buildAnalysisCriteriaLabel(itemId,f), result, scopeLabel, ops.length);
+  return true;
+}
+
+// 입력창 제출 처리 — 자유 자연어를 AI가 임의 해석하지 않고, "항목 + 조건"만 인식한다.
+function runAiQuery(){
+  const q=document.getElementById('aiQueryInput').value.trim();
+  if(!q){ showToast('질문을 입력해주세요.',''); return; }
+
+  const parsed=parseAiInput(q);
+
+  if(parsed.matchedItems.length===0){
+    document.getElementById('aiResultCard').classList.remove('visible');
+    renderAiItemBtns(null);
+    showAiParseHint(`<span>❓ <b>분석할 항목을 선택해주세요.</b> 입력하신 내용에서 등록된 분석 항목(만족도/VOC/운영이슈/재방문/실적목표/사업성과)을 찾지 못했습니다. 아래 버튼 중 하나를 선택하거나, "2026 취약 만족도"처럼 항목명을 포함해 입력해주세요.</span>`);
+    return;
+  }
+
+  if(parsed.matchedItems.length>1){
+    document.getElementById('aiResultCard').classList.remove('visible');
+    const choices=parsed.matchedItems.map(id=>{
+      const it=ANALYSIS_ITEMS.find(a=>a.id===id);
+      return `<button data-item="${id}">${it?it.icon+' '+it.label:id}</button>`;
+    }).join('');
+    showAiParseHint(`<div><span>⚠️ <b>${parsed.matchedItems.map(id=>ANALYSIS_ITEMS.find(a=>a.id===id)?.label||id).join(' / ')}</b> 중 어떤 분석을 원하시는지 명확하지 않습니다. 하나를 선택해주세요.</span><div class="ai-multi-choice">${choices}</div></div>`);
+    // 선택 버튼 클릭 시 인식된 조건을 그대로 유지해 해당 항목으로 실행 (여기서 성공하면 그때 검색창을 비운다)
+    document.querySelectorAll('#aiParseHint .ai-multi-choice button').forEach(btn=>{
+      btn.addEventListener('click',()=>{ if(runAiAnalysisItem(btn.dataset.item, parsed)) clearAiQueryInput(); });
+    });
+    return; // 선택이 필요한 상태이므로 검색어는 지우지 않는다 (사용자가 다시 확인할 수 있도록 유지)
+  }
+
+  // 항목이 정확히 1개로 인식된 경우 — 실행 성공 시에만 검색창을 비운다
+  const ok=runAiAnalysisItem(parsed.matchedItems[0], parsed);
+  if(ok) clearAiQueryInput();
+}
+
+// 근거 보기 버튼 클릭
+function showEvidenceOps(btn){
+  const ids=btn.dataset.opids.split(',').filter(Boolean);
+  const ops=ids.map(id=>RT_OPS.find(o=>o.id===id)).filter(Boolean);
+  if(!ops.length){ showToast('연결된 운영 건 정보가 없습니다.'); return; }
+  const refPanel=document.getElementById('arOpsRef');
+  const refList=document.getElementById('arOpsList');
+  refList.innerHTML=ops.map(op=>`
+    <span class="ai-ops-ref-item" data-opid="${op.id}" onclick="jumpToOp('${op.id}')">${op.id}<br><span style="font-size:10px;font-weight:400">${op.단체명}</span></span>`).join('');
+  refPanel.style.display='';
+  refPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// AI 분석 화면에서 운영 건 클릭 → 아카이브로 이동 후 상세 열기
+function jumpToOp(id){
+  const op=RT_OPS.find(o=>o.id===id); if(!op) return;
+  // AI 탭 → 해당 사업 탭으로 전환
+  state.tab=op.사업분류;
+  state.subtype='전체';
+  hideAIPage();
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===op.사업분류));
+  render();
+  setTimeout(()=>openDetail(id),150);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   결과보고서 초안 생성
+═══════════════════════════════════════════════════════════════════ */
+function openReportModal(id){
+  const op=RT_OPS.find(o=>o.id===id); if(!op) return;
+  const sv=rtSurvey(id); const voc=rtVOC(id); const rv=rtReview(id);
+  const progs=rtGetProgs(id);
+
+  document.getElementById('reportModalTitle').textContent=op.단체명;
+  document.getElementById('reportModal').classList.add('open');
+  document.body.style.overflow='hidden';
+
+  const body=document.getElementById('reportModalBody');
+  const report=generateReport(op,sv,voc,rv,progs);
+  body.innerHTML=`
+    <div class="report-preview" id="reportPreviewText">${report.html}</div>`;
+}
+
+function generateReport(op,sv,voc,rv,progs){
+  const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+  const progStr=progs.map(p=>p.프로그램명).join(', ');
+  const progCount=progs.length;
+  const totalPeople=(op.인원.전체||0).toLocaleString();
+  const 청소년=(op.인원.청소년총||0).toLocaleString();
+  const adultLabel=getAdultLabel(op);
+  const adultCount=getAdultCount(op.인원,op);
+
+  // 운영 기간 문구
+  let periodStr='';
+  if(op.운영시작일&&op.운영종료일&&op.운영시작일!==op.운영종료일){
+    periodStr=`${op.운영시작일} ~ ${op.운영종료일} (${op.운영일수}일간)`;
+  } else if(op.운영시작일){
+    periodStr=`${op.운영시작일} (당일)`;
+  }
+
+  // 대상 구분 문구
+  const tgtStr=op.대상구분==='교원'?`교원 ${adultCount}명`
+    :op.세부유형==='가족캠프'?`가족 참여자 청소년 ${청소년}명, 보호자 ${adultCount}명 (전체 ${totalPeople}명)`
+    :`청소년 ${청소년}명${adultCount>0?`, ${adultLabel} ${adultCount}명`:''}(전체 ${totalPeople}명)`;
+
+  // 프로그램 문구
+  let progSection='';
+  if(progs.length){
+    const forms={'2박3일':'2박 3일','1박2일':'1박 2일','당일체험':'당일','온라인':'온라인'};
+    progSection=`<p>${forms[op.운영형태]||op.운영형태}간 ${progStr} 등 ${progCount}종의 우주과학 체험 프로그램을 운영하였음.</p>`;
+  } else {
+    progSection=`<p>프로그램 구성 정보가 등록되지 않았습니다.</p>`;
+  }
+
+  // 성과 문구
+  let outcomeSection='';
+  if(sv&&sv.만족도점수){
+    const satLv=sv.만족도점수>=95?'매우 높은':sv.만족도점수>=90?'높은':'양호한';
+    const effLv=sv.효과성점수>=95?'매우 높은':sv.효과성점수>=90?'높은':'양호한';
+    const rate=((sv.만족도응답자/sv.대상인원)*100).toFixed(0);
+    outcomeSection=`<p>${tgtStr}이/가 참여하였으며, 설문 응답자 ${sv.만족도응답자}명(응답률 ${rate}%) 기준 전체 만족도 ${sv.만족도점수}점(${satLv} 수준), 효과성 ${sv.효과성점수}점(${effLv} 수준)으로 나타남.</p>`;
+  } else {
+    outcomeSection=`<p>${tgtStr}이/가 참여하였음. 설문 결과가 아직 등록되지 않았습니다.</p>`;
+  }
+
+  // 주요 의견 문구
+  let opinionSection='';
+  if(sv&&sv.만족도주관식){
+    opinionSection=`<p>${sv.만족도주관식.replace(/^"|"$/g,'')} 등의 의견이 확인됨.</p>`;
+    if(sv.효과성주관식&&sv.효과성의견성격==='긍정'){
+      opinionSection+=`<p>효과성 측면에서는 ${sv.효과성주관식.replace(/^"|"$/g,'')}는 의견도 나타남.</p>`;
+    }
+  } else {
+    opinionSection=`<p>주관식 의견이 아직 등록되지 않았습니다.</p>`;
+  }
+
+  // 개선사항 문구
+  let improveSection='';
+  const improveParts=[];
+  if(rv&&rv.운영상어려움) improveParts.push(rv.운영상어려움);
+  if(voc&&voc.개선재발방지) improveParts.push(voc.개선재발방지);
+  if(rv&&rv.다음개선사항) improveParts.push(rv.다음개선사항);
+  if(improveParts.length){
+    improveSection=`<p>${improveParts.slice(0,2).join(' 또한, ')}. 차기 운영 시 해당 사항을 반영할 필요가 있음.</p>`;
+  } else {
+    improveSection=`<p>특별한 개선사항은 없었으나, 지속적인 품질 관리가 필요함.</p>`;
+  }
+
+  const html=`
+    <div class="report-meta">
+      운영ID: ${op.id} &nbsp;|&nbsp; 작성일: ${today} &nbsp;|&nbsp; 사업: ${op.사업분류} &gt; ${op.세부유형}
+      &nbsp;|&nbsp; 운영 기간: ${periodStr||'-'}
+    </div>
+    <h3>1. 주요 운영 내용</h3>
+    ${progSection}
+    <h3>2. 운영 성과 및 참여 현황</h3>
+    ${outcomeSection}
+    <h3>3. 주요 의견</h3>
+    ${opinionSection}
+    <h3>4. 개선사항 및 차기 운영 제언</h3>
+    ${improveSection}
+    ${rv&&rv.체크포인트?`<p>다음 운영 체크포인트: ${rv.체크포인트}</p>`:''}`;
+
+  return {html, plain: html.replace(/<[^>]+>/g,'').replace(/\s{2,}/g,' ').trim()};
+}
+
+function closeReportModal(){
+  document.getElementById('reportModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function copyReport(){
+  const el=document.getElementById('reportPreviewText');
+  const text=el?el.innerText:'';
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('btnReportCopy');
+    btn.textContent='✅ 복사됨'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='📋 전체 복사'; btn.classList.remove('copied'); },2000);
+  }).catch(()=>showToast('복사에 실패했습니다.','error'));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   재방문 프로그램 추천
+   1차 프로토타입 범위:
+   ① 해당 기관의 과거 방문 이력 확인
+   ② 과거 실제 운영 프로그램 확인 → ③ 중복 프로그램으로 표시
+   ④ 전체 운영 데이터 중 해당 기관이 경험하지 않은 프로그램을 "신규 프로그램 후보"로 제시
+   ⑤ 현재 데이터로 확인 가능한 사실만 근거로 표시 (임의 추론 금지)
+   ※ 자동 일정표 작성은 이번 범위에 포함하지 않는다.
+═══════════════════════════════════════════════════════════════════ */
+let revisitState={ stage:'search', opId:null, org:null, pastVisits:[], selectedPastId:null };
+
+function openRevisitModal(opId){
+  document.getElementById('revisitModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  if(opId){
+    const op=RT_OPS.find(o=>o.id===opId);
+    if(!op){ showToast('운영 건 정보를 찾을 수 없습니다.','error'); return; }
+    const pastVisits=findPastVisitsByOrg(op.단체명, opId);
+    revisitState={ stage: pastVisits.length? 'select':'empty', opId, org:op.단체명, pastVisits, selectedPastId:null };
+  } else {
+    revisitState={ stage:'search', opId:null, org:null, pastVisits:[], selectedPastId:null };
+  }
+  renderRevisitModal();
+}
+
+function closeRevisitModal(){
+  document.getElementById('revisitModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// 기관명으로 검색 (AI 화면 진입 시 사용)
+function revisitSearchOrg(){
+  const q=document.getElementById('rvSearchInput').value.trim();
+  if(!q){ showToast('기관명을 입력해주세요.',''); return; }
+  const groups=searchOrgByName(q);
+  revisitState.stage='searchResult';
+  revisitState.searchResults=groups;
+  revisitState.searchQuery=q;
+  renderRevisitModal();
+}
+
+// 검색 결과에서 기관(단체명 그룹) 선택 → 그 기관의 방문이력 표시
+function revisitPickOrgGroup(orgName){
+  const group=(revisitState.searchResults||[]).find(g=>g.단체명===orgName);
+  if(!group) return;
+  const sorted=[...group.ops].sort((a,b)=>(a.운영시작일||'').localeCompare(b.운영시작일||''));
+  revisitState={ stage:'select', opId:null, org:orgName, pastVisits:sorted, selectedPastId:null };
+  renderRevisitModal();
+}
+
+// 과거 방문 이력 중 하나를 선택 → 조건 입력 단계로
+function revisitPickPastVisit(pastId){
+  revisitState.selectedPastId=pastId;
+  revisitState.stage='condition';
+  renderRevisitModal();
+}
+
+function revisitBackToSelect(){
+  revisitState.stage='select';
+  renderRevisitModal();
+}
+
+// 조건 입력 후 "추천 결과 보기" 클릭
+function revisitRunRecommend(){
+  const gv=(id)=>{ const el=document.getElementById(id); return el?el.value:''; };
+  revisitState.condition={
+    연도: gv('rvYear'),
+    운영형태: gv('rvForm'),
+    대상구분: gv('rvTarget'),
+    예상인원: gv('rvPeople'),
+    필수프로그램: gv('rvMustHave'),
+    요청사항: gv('rvNote'),
+    옵션_과거제외: document.getElementById('rvOptExclude')?document.getElementById('rvOptExclude').checked:true
+  };
+  revisitState.stage='result';
+  renderRevisitModal();
+}
+
+function renderRevisitModal(){
+  const body=document.getElementById('revisitModalBody');
+  const s=revisitState;
+
+  if(s.stage==='search'){
+    body.innerHTML=`
+      <div class="section">
+        <div class="section-title">기관 검색</div>
+        <div class="form-hint" style="margin-bottom:8px">재방문 프로그램 추천을 확인할 기관명을 입력하세요. (단체명 일부만 입력해도 검색됩니다)</div>
+        <div style="display:flex;gap:8px">
+          <input class="form-control" id="rvSearchInput" type="text" placeholder="예: 푸른하늘고등학교" onkeydown="if(event.key==='Enter')revisitSearchOrg()">
+          <button class="btn-primary" style="white-space:nowrap" onclick="revisitSearchOrg()">🔍 검색</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if(s.stage==='searchResult'){
+    const results=s.searchResults||[];
+    body.innerHTML=`
+      <div class="section">
+        <div class="section-title">검색 결과 — "${s.searchQuery}"</div>
+        ${results.length? `
+          <div class="form-hint" style="margin-bottom:8px">완전히 동일한 기관인지는 확정되지 않았습니다. 아래 목록에서 재방문 확인이 필요한 기관을 선택하세요.</div>
+          <div class="revisit-org-list">
+            ${results.map(g=>`
+              <div class="revisit-org-item" onclick="revisitPickOrgGroup('${g.단체명.replace(/'/g,"\\'")}')">
+                <div class="revisit-org-name">${g.단체명}</div>
+                <div class="revisit-org-meta">${g.지역||'-'} · 운영 이력 ${g.ops.length}건</div>
+              </div>`).join('')}
+          </div>` : `<div class="empty-state" style="padding:24px 0"><div class="empty-state-text">검색 결과가 없습니다. 단체명을 다시 확인해주세요.</div></div>`}
+        <button class="btn-secondary" style="margin-top:12px" onclick="revisitState.stage='search';renderRevisitModal()">← 다시 검색</button>
+      </div>`;
+    return;
+  }
+
+  if(s.stage==='empty'){
+    body.innerHTML=`
+      <div class="empty-state" style="padding:40px 0">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text"><b>${s.org}</b>의 과거 방문 이력을 찾을 수 없습니다.<br>단체명이 완전히 일치하는 이전 운영 건이 없습니다.</div>
+      </div>`;
+    return;
+  }
+
+  if(s.stage==='select'){
+    body.innerHTML=`
+      <div class="section">
+        <div class="section-title">${s.org} — 과거 방문 이력 선택</div>
+        <div class="form-hint" style="margin-bottom:8px">단체명이 완전히 일치하는 과거 운영 건입니다. 중복 프로그램을 비교할 기준이 될 방문을 선택하세요.</div>
+        <div class="revisit-org-list">
+          ${s.pastVisits.map(o=>{
+            const progs=getProgsAnyStore(o.id);
+            const sv=getSurveyAnyStore(o.id);
+            return `
+            <div class="revisit-org-item" onclick="revisitPickPastVisit('${o.id}')">
+              <div class="revisit-org-name">${o.운영시작일||'-'} · ${o.운영형태} · ${o.대상구분} · ${(o.인원&&o.인원.전체)||0}명${o.isDemo?' <span class="badge badge-gray" style="margin-left:4px">데모</span>':''}</div>
+              <div class="revisit-org-meta">운영ID: ${o.id} · 프로그램 ${progs.length}종 (${progs.map(p=>p.프로그램명).join(', ')||'-'})${sv?` · 당시 만족도 ${sv.만족도점수}점`:''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    return;
+  }
+
+  if(s.stage==='condition'){
+    const pastOp=[...RT_OPS,...RT_DEMO_OPS].find(o=>o.id===s.selectedPastId);
+    body.innerHTML=`
+      <div class="section">
+        <div class="section-title">선택한 과거 방문</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="info-label">기관명</span><span class="info-val">${s.org}</span></div>
+          <div class="info-item"><span class="info-label">과거 운영일</span><span class="info-val">${pastOp?pastOp.운영시작일:'-'}</span></div>
+          <div class="info-item"><span class="info-label">운영형태 / 대상</span><span class="info-val">${pastOp?pastOp.운영형태:'-'} / ${pastOp?pastOp.대상구분:'-'}</span></div>
+          <div class="info-item"><span class="info-label">과거 운영 프로그램</span><span class="info-val">${getProgsAnyStore(s.selectedPastId).map(p=>p.프로그램명).join(', ')||'-'}</span></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">이번 운영 조건</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">신규 운영연도</label>
+            <input class="form-control" id="rvYear" type="text" placeholder="예: 2027" value="${new Date().getFullYear()}"></div>
+          <div class="form-group"><label class="form-label">운영형태</label>
+            <select class="form-control" id="rvForm">
+              <option value="당일체험">당일체험</option>
+              <option value="1박2일">1박2일</option>
+              <option value="2박3일" ${pastOp&&pastOp.운영형태==='2박3일'?'selected':''}>2박3일</option>
+            </select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">대상</label>
+            <select class="form-control" id="rvTarget">
+              <option value="초등">초등</option>
+              <option value="중등">중등</option>
+              <option value="고등" ${pastOp&&pastOp.대상구분==='고등'?'selected':''}>고등</option>
+              <option value="혼합">혼합</option>
+            </select></div>
+          <div class="form-group"><label class="form-label">예상인원</label>
+            <input class="form-control" id="rvPeople" type="number" min="0" placeholder="예: 100"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label class="form-label">추가 요청사항</label>
+            <textarea class="form-control" id="rvNote" placeholder="예: 지난번에 했던 프로그램과 겹치지 않게 구성해달라는 요청 등"></textarea></div>
+        </div>
+        <div class="form-row full">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray700)">
+            <input type="checkbox" id="rvOptExclude" checked style="width:14px;height:14px"> 과거 방문 프로그램 제외 (기본 적용)
+          </label>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label class="form-label">반드시 포함할 프로그램 (선택, 있는 경우만 입력)</label>
+            <input class="form-control" id="rvMustHave" type="text" placeholder="예: 천체투영관"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="revisitBackToSelect()">← 다시 선택</button>
+        <button class="btn-primary" onclick="revisitRunRecommend()">추천 결과 보기 →</button>
+      </div>`;
+    return;
+  }
+
+  if(s.stage==='result'){
+    const analysis=analyzeRevisitPrograms(s.selectedPastId);
+    const pastOp=[...RT_OPS,...RT_DEMO_OPS].find(o=>o.id===s.selectedPastId);
+    const sv=getSurveyAnyStore(s.selectedPastId);
+    const cond=s.condition||{};
+    const mustHave=(cond.필수프로그램||'').trim();
+
+    // ③ 신규 프로그램 후보 — "과거 방문 프로그램 제외" 옵션(기본 ON)을 끄면
+    //    과거에 운영했던 프로그램도 후보 목록에 다시 포함시킨다 (근거 문구도 함께 조정)
+    const excludeOn = cond.옵션_과거제외!==false;
+    let candidates = excludeOn
+      ? analysis.candidatePrograms
+      : [...analysis.candidatePrograms, ...analysis.pastPrograms.map(p=>({프로그램명:p.프로그램명, 등장횟수:null, isPast:true}))];
+    if(mustHave){
+      // 필수 포함 프로그램이 후보에 없으면 별도 안내, 있으면 상단 고정
+      candidates=[...candidates].sort((a,b)=>{
+        if(a.프로그램명===mustHave) return -1;
+        if(b.프로그램명===mustHave) return 1;
+        return 0;
+      });
+    }
+
+    body.innerHTML=`
+      <div class="revisit-summary-bar">
+        <b>${s.org}</b> · 과거 운영 ${pastOp?pastOp.운영시작일:'-'} (${pastOp?pastOp.운영형태:'-'}, ${pastOp?pastOp.대상구분:'-'}) 대비
+        이번 운영 조건: ${cond.연도||'-'}년 / ${cond.운영형태||'-'} / ${cond.대상구분||'-'}${cond.예상인원?` / ${cond.예상인원}명`:''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">① 과거 운영 프로그램 (${analysis.pastPrograms.length}종)</div>
+        <div class="revisit-tag-list">
+          ${analysis.pastPrograms.map(p=>`<span class="revisit-tag revisit-tag-past">${p.프로그램명}</span>`).join('')||'<span class="form-hint">기록된 프로그램이 없습니다.</span>'}
+        </div>
+        ${sv?`<div class="form-hint" style="margin-top:6px">참고: 당시 운영 전체 만족도 ${sv.만족도점수}점 (프로그램별 만족도가 아닌 운영 건 전체 만족도입니다)</div>`:''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">② 중복 프로그램 (과거 운영 이력과 동일, ${analysis.duplicateNames.length}종)</div>
+        <div class="form-hint" style="margin-bottom:6px">${excludeOn?'과거 방문에서 실제 운영한 프로그램과 이름이 동일하여 이번 신규 후보에서 제외했습니다.':'"과거 방문 프로그램 제외" 옵션이 해제되어 아래 프로그램도 ③ 신규 후보 목록에 다시 포함되어 있습니다.'}</div>
+        <div class="revisit-tag-list">
+          ${analysis.duplicateNames.length? analysis.duplicateNames.map(n=>`<span class="revisit-tag revisit-tag-dup">${excludeOn?'🚫 ':''}${n}</span>`).join('') : '<span class="form-hint">중복 프로그램이 없습니다.</span>'}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">③ 신규 프로그램 후보 (${candidates.length}종)</div>
+        <div class="form-hint" style="margin-bottom:6px">
+          ※ 아래 목록은 "센터가 현재 운영 가능한 전체 프로그램"이 아니라, <b>전체 운영 데이터(DB_PROGRAMS)에서 확인된, 이 기관이 과거에 경험하지 않은 프로그램 후보</b>입니다.
+          프로그램별 적정 학년·운영시간·최대인원·운영장소 등의 기준 데이터가 없어 우선순위나 적합도는 판단하지 않았습니다.
+        </div>
+        <div class="revisit-tag-list">
+          ${candidates.length? candidates.map(c=>`
+            <span class="revisit-tag revisit-tag-new ${c.프로그램명===mustHave?'revisit-tag-must':''}">
+              ${c.프로그램명===mustHave?'⭐ ':''}${c.프로그램명}
+              <span class="revisit-tag-count">${c.isPast?'과거 방문 시 운영 (제외 옵션 해제됨)':`전체 ${c.등장횟수}건에서 운영`}</span>
+            </span>`).join('') : '<span class="form-hint">전체 운영 데이터에 등장한 프로그램 중 이 기관이 경험하지 않은 프로그램이 없습니다.</span>'}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">④ 추천 근거 (현재 데이터로 확인되는 사실만 표시)</div>
+        <ul class="revisit-basis-list">
+          <li>과거 방문(${pastOp?pastOp.운영시작일:'-'})에서 실제 운영한 프로그램 ${analysis.duplicateNames.length}종을 이번 추천에서 제외했습니다.</li>
+          <li>신규 후보 ${candidates.length}종은 전체 운영 데이터(DB_PROGRAMS)에 등장한 이력만으로 산출했으며, "등장횟수"는 전체 운영 건 중 해당 프로그램이 기록된 건수입니다.</li>
+          ${mustHave? `<li>입력하신 필수 포함 프로그램 "${mustHave}"${candidates.some(c=>c.프로그램명===mustHave)?'가 신규 후보 목록에 포함되어 상단에 표시했습니다.':'는 과거 방문 시 이미 운영했거나 전체 데이터에서 확인되지 않아 신규 후보 목록에 없습니다.'}</li>`:''}
+          <li>프로그램별 적정 학년, 운영시간, 최대 수용인원, 실내/실외, 운영형태 적합성 데이터가 없어 이번 조건(${cond.운영형태||'-'} · ${cond.대상구분||'-'})에 대한 적합도는 판단하지 않았습니다.</li>
+          <li>만족도는 프로그램 단위가 아닌 운영 건 전체 단위로만 기록되어 있어, 특정 프로그램의 만족도를 근거로 추천하지 않았습니다.</li>
+        </ul>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="revisitState.stage='condition';renderRevisitModal()">← 조건 다시 입력</button>
+      </div>`;
+    return;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   토스트
+═══════════════════════════════════════════════════════════════════ */
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast '+(type==='success'?'success':type==='error'?'error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ── 시작 ── */
+init();
+</script>
+</body>
+</html>
