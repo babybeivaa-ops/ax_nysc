@@ -1448,6 +1448,31 @@ function renderStats(){
     </div>`;
 }
 
+// 운영기간 표시 유틸 — 당일: "2026.08.11" / 다일: "2026.08.11 ~ 08.12 · 1박2일"
+// 방어로직: 시작일이 없거나 형식이 잘못된 경우 원본 문자열(또는 '-')로 안전하게 대체한다.
+function fmtOpDate(dateStr){
+  if(!dateStr) return '';
+  const m=String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return dateStr; // 예상 형식(YYYY-MM-DD)이 아니면 원본 그대로 표시(값 누락 방지)
+  return {y:m[1], md:`${m[2]}.${m[3]}`, full:`${m[1]}.${m[2]}.${m[3]}`};
+}
+// withForm=true면 끝에 "· 운영형태"를 붙인다(예: 목록처럼 운영형태 배지가 별도 컬럼에
+// 이미 있는 화면에서는 false로 호출해 중복 표시를 피한다).
+function formatOpPeriod(op, withForm){
+  if(withForm===undefined) withForm=true;
+  const start=op&&op.운영시작일, end=op&&op.운영종료일;
+  if(!start) return '-'; // 시작일 자체가 없는 경우의 방어 처리
+  const s=fmtOpDate(start);
+  if(typeof s==='string') return s || '-'; // 형식이 어긋난 원본 문자열 그대로
+  const formLabel=(withForm&&op.운영형태)?` · ${op.운영형태}`:'';
+  if(!end || start===end) return `${s.full}${formLabel}`; // 당일: 날짜 중복 표시하지 않음
+  const e=fmtOpDate(end);
+  if(typeof e==='string') return `${s.full} ~ ${e}${formLabel}`; // 종료일 형식이 어긋난 경우도 값은 표시
+  // 같은 연도면 종료일은 월.일만, 연도가 다르면 종료일도 전체 표기
+  const endPart = (e.y===s.y) ? e.md : e.full;
+  return `${s.full} ~ ${endPart}${formLabel}`;
+}
+
 function renderList(){
   const data=getFiltered();
   const tbody=document.getElementById('listBody');
@@ -1466,7 +1491,7 @@ function renderList(){
       <td><span class="org-name">${op.단체명}</span></td>
       <td><span class="badge badge-gray">${op.세부유형}</span></td>
       <td><span class="badge ${badgeCls}">${op.운영형태}</span></td>
-      <td style="white-space:nowrap;color:var(--gray600)">${op.운영시작일}${op.운영시작일!==op.운영종료일?' ~':''}</td>
+      <td style="white-space:nowrap;color:var(--gray600)">${formatOpPeriod(op,false)}</td>
       <td class="num" style="font-weight:600">${(op.인원.전체||0).toLocaleString()}</td>
       <td><div class="prog-summary">${rtProgSummary(op.id)}</div></td>
       <td>${satHtml}</td>
@@ -1527,8 +1552,9 @@ function fillInfo(op){
         <div class="info-item"><span class="info-label">대상구분</span><span class="info-val">${op.대상구분}</span></div>
         <div class="info-item"><span class="info-label">운영형태</span><span class="info-val">${op.운영형태}</span></div>
         <div class="info-item"><span class="info-label">운영일수 / 숙박</span><span class="info-val">${op.운영일수}일 / ${op.숙박일수}박</span></div>
-        <div class="info-item"><span class="info-label">운영시작일</span><span class="info-val">${op.운영시작일}</span></div>
-        <div class="info-item"><span class="info-label">운영종료일</span><span class="info-val">${op.운영종료일}</span></div>
+        <div class="info-item"><span class="info-label">운영기간</span><span class="info-val">${formatOpPeriod(op,false)}</span></div>
+        <div class="info-item"><span class="info-label">운영시작일</span><span class="info-val">${op.운영시작일||'-'}</span></div>
+        <div class="info-item"><span class="info-label">운영종료일</span><span class="info-val">${op.운영종료일||'-'}</span></div>
         <div class="info-item"><span class="info-label">기준 프로그램 수</span><span class="info-val">${op.기준프로그램수}개</span></div>
         <div class="info-item"><span class="info-label">실제 프로그램 수</span><span class="info-val">${rtProgCount(op.id)}개</span></div>
       </div>
